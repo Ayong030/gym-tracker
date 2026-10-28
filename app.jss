@@ -97,7 +97,8 @@ let calculatedBFValue = null;
 let progressChartInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('entryDate').valueAsDate = new Date();
+    const dateInput = document.getElementById('entryDate');
+    if (dateInput) dateInput.valueAsDate = new Date();
     loadFromLocalStorage();
     updateLanguageUI();
     renderAll();
@@ -105,7 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function toggleLanguage() {
     currentLang = currentLang === 'id' ? 'en' : 'id';
-    document.getElementById('currentLangLabel').textContent = currentLang.toUpperCase();
+    const langLabel = document.getElementById('currentLangLabel');
+    if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     updateLanguageUI();
 }
 
@@ -124,11 +126,11 @@ function toggleGenderFields() {
     const hipContainer = document.getElementById('hipFieldContainer');
     const waistLabel = document.getElementById('waistLabel');
     if (gender === 'female') {
-        hipContainer.classList.remove('hidden');
-        waistLabel.textContent = currentLang === 'id' ? 'Lingkar Pinggang (cm)' : 'Waist (cm)';
+        if (hipContainer) hipContainer.classList.remove('hidden');
+        if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Lingkar Pinggang (cm)' : 'Waist (cm)';
     } else {
-        hipContainer.classList.add('hidden');
-        waistLabel.textContent = currentLang === 'id' ? 'Perut / Pinggang (cm)' : 'Abdomen/Waist (cm)';
+        if (hipContainer) hipContainer.classList.add('hidden');
+        if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Perut / Pinggang (cm)' : 'Abdomen/Waist (cm)';
     }
 }
 
@@ -175,6 +177,7 @@ function applyCalculatedBF() {
     }
 }
 
+// Kompresi foto otomatis (max-width 400px, quality 0.5) agar tidak melebih kuota localStorage
 function previewImage(input, previewId) {
     const previewContainer = document.getElementById(previewId);
     if (input.files && input.files[0]) {
@@ -184,8 +187,8 @@ function previewImage(input, previewId) {
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                const MAX_WIDTH = 600;
-                const MAX_HEIGHT = 800;
+                const MAX_WIDTH = 400;
+                const MAX_HEIGHT = 500;
                 let width = img.width;
                 let height = img.height;
 
@@ -197,7 +200,9 @@ function previewImage(input, previewId) {
                 canvas.width = width;
                 canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
-                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                
+                // Kualitas kompresi 0.5 agar ukuran file hemat
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
 
                 previewContainer.innerHTML = `<img src="${compressedDataUrl}" class="h-full w-full object-cover rounded-lg">`;
                 previewContainer.dataset.base64 = compressedDataUrl;
@@ -215,9 +220,9 @@ function handleFormSubmit(event) {
     const bodyFat = parseFloat(document.getElementById('entryBodyFat').value) || null;
     const notes = document.getElementById('entryNotes').value;
 
-    const frontPhoto = document.getElementById('frontPreview').dataset.base64 || null;
-    const sidePhoto = document.getElementById('sidePreview').dataset.base64 || null;
-    const backPhoto = document.getElementById('backPreview').dataset.base64 || null;
+    const frontPhoto = document.getElementById('frontPreview')?.dataset?.base64 || null;
+    const sidePhoto = document.getElementById('sidePreview')?.dataset?.base64 || null;
+    const backPhoto = document.getElementById('backPreview')?.dataset?.base64 || null;
 
     const newEntry = {
         id: Date.now(),
@@ -233,25 +238,43 @@ function handleFormSubmit(event) {
     entries.push(newEntry);
     entries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    saveToLocalStorage();
-    renderAll();
-    event.target.reset();
-    document.getElementById('entryDate').valueAsDate = new Date();
-    ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
-        document.getElementById(id).innerHTML = '<i class="fa-solid fa-camera text-xl"></i>';
-        delete document.getElementById(id).dataset.base64;
-    });
-    calculatedBFValue = null;
-    document.getElementById('calcResultDisplay').textContent = '-- %';
+    if (saveToLocalStorage()) {
+        renderAll();
+        event.target.reset();
+        document.getElementById('entryDate').valueAsDate = new Date();
+        ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = '<i class="fa-solid fa-camera text-xl"></i>';
+                delete el.dataset.base64;
+            }
+        });
+        calculatedBFValue = null;
+        document.getElementById('calcResultDisplay').textContent = '-- %';
+    }
 }
 
 function saveToLocalStorage() {
-    localStorage.setItem('gym_tracker_entries', JSON.stringify(entries));
+    try {
+        localStorage.setItem('gym_tracker_entries', JSON.stringify(entries));
+        return true;
+    } catch (e) {
+        alert(currentLang === 'id' 
+            ? 'Penyimpanan penuh! Hapus beberapa foto/entri lama atau gunakan fitur Ekspor JSON.' 
+            : 'Storage full! Delete old photos/entries or use Export JSON.');
+        entries.pop(); // Batalkan penambahan entri terakhir jika memori penuh
+        return false;
+    }
 }
 
 function loadFromLocalStorage() {
-    const data = localStorage.getItem('gym_tracker_entries');
-    if (data) { entries = JSON.parse(data); }
+    try {
+        const data = localStorage.getItem('gym_tracker_entries');
+        if (data) { entries = JSON.parse(data); }
+    } catch (e) {
+        console.error("Gagal membaca localStorage:", e);
+        entries = [];
+    }
 }
 
 function renderAll() {
@@ -262,32 +285,40 @@ function renderAll() {
 }
 
 function renderStats() {
-    document.getElementById('statEntries').textContent = entries.length;
+    const totalEntriesEl = document.getElementById('statEntries');
+    if (totalEntriesEl) totalEntriesEl.textContent = entries.length;
+
     const weighted = entries.filter(e => e.weight !== null);
     const bfs = entries.filter(e => e.bodyFat !== null);
+
+    const statWeightEl = document.getElementById('statWeight');
+    const changeEl = document.getElementById('statChange');
 
     if (weighted.length > 0) {
         const curW = weighted[weighted.length - 1].weight;
         const startW = weighted[0].weight;
         const diff = (curW - startW).toFixed(1);
-        document.getElementById('statWeight').innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
-        const changeEl = document.getElementById('statChange');
-        changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diff} <span class="text-sm font-normal text-zinc-400">kg</span>`;
-        changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-400'}`;
+        if (statWeightEl) statWeightEl.innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        if (changeEl) {
+            changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diff} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+            changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-400'}`;
+        }
     } else {
-        document.getElementById('statWeight').innerHTML = `-- <span class="text-sm font-normal text-zinc-400">kg</span>`;
-        document.getElementById('statChange').textContent = '0.0 kg';
+        if (statWeightEl) statWeightEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        if (changeEl) changeEl.textContent = '0.0 kg';
     }
 
+    const statBodyFatEl = document.getElementById('statBodyFat');
     if (bfs.length > 0) {
-        document.getElementById('statBodyFat').innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-zinc-400">%</span>`;
+        if (statBodyFatEl) statBodyFatEl.innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-zinc-400">%</span>`;
     } else {
-        document.getElementById('statBodyFat').innerHTML = `-- <span class="text-sm font-normal text-zinc-400">%</span>`;
+        if (statBodyFatEl) statBodyFatEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">%</span>`;
     }
 }
 
 function renderHistory() {
     const container = document.getElementById('historyList');
+    if (!container) return;
     container.innerHTML = '';
 
     if (entries.length === 0) {
@@ -333,16 +364,24 @@ function deleteEntry(id) {
 }
 
 function openLightbox(src) {
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightboxModal').classList.remove('hidden');
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImg');
+    if (modal && img) {
+        img.src = src;
+        modal.classList.remove('hidden');
+    }
 }
+
 function closeLightbox() {
-    document.getElementById('lightboxModal').classList.add('hidden');
+    const modal = document.getElementById('lightboxModal');
+    if (modal) modal.classList.add('hidden');
 }
 
 function renderComparisonDropdowns() {
     const s1 = document.getElementById('compDate1');
     const s2 = document.getElementById('compDate2');
+    if (!s1 || !s2) return;
+    
     s1.innerHTML = ''; s2.innerHTML = '';
 
     entries.forEach(entry => {
@@ -355,8 +394,12 @@ function renderComparisonDropdowns() {
 }
 
 function renderComparison() {
-    const id1 = parseInt(document.getElementById('compDate1').value);
-    const id2 = parseInt(document.getElementById('compDate2').value);
+    const s1 = document.getElementById('compDate1');
+    const s2 = document.getElementById('compDate2');
+    if (!s1 || !s2 || !s1.value || !s2.value) return;
+
+    const id1 = parseInt(s1.value);
+    const id2 = parseInt(s2.value);
     const poseType = document.getElementById('compPoseType').value + 'Photo';
 
     const e1 = entries.find(e => e.id === id1);
@@ -364,7 +407,8 @@ function renderComparison() {
 
     if (!e1 || !e2) return;
 
-    document.getElementById('comparisonResultContainer').classList.remove('hidden');
+    const container = document.getElementById('comparisonResultContainer');
+    if (container) container.classList.remove('hidden');
     
     document.getElementById('compDateDisplay1').textContent = e1.date;
     document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
@@ -380,16 +424,21 @@ function renderComparison() {
         ? `<img src="${e2[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e2[poseType]}')">`
         : `<span class="text-xs text-zinc-500">No photo</span>`;
 
+    const summaryEl = document.getElementById('comparisonDiffSummary');
     if (e1.weight !== null && e2.weight !== null) {
         const diffW = (e2.weight - e1.weight).toFixed(1);
-        document.getElementById('comparisonDiffSummary').innerHTML = `Net Weight Difference: <strong class="${diffW <= 0 ? 'text-green-400' : 'text-amber-400'}">${diffW > 0 ? '+' : ''}${diffW} kg</strong>`;
+        if (summaryEl) {
+            summaryEl.innerHTML = `Net Weight Difference: <strong class="${diffW <= 0 ? 'text-green-400' : 'text-amber-400'}">${diffW > 0 ? '+' : ''}${diffW} kg</strong>`;
+        }
     } else {
-        document.getElementById('comparisonDiffSummary').innerHTML = '';
+        if (summaryEl) summaryEl.innerHTML = '';
     }
 }
 
 function renderChart() {
-    const ctx = document.getElementById('progressChart').getContext('2d');
+    const canvas = document.getElementById('progressChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     const labels = entries.map(e => e.date);
     const weights = entries.map(e => e.weight);
     const bodyFats = entries.map(e => e.bodyFat);
