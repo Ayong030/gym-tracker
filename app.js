@@ -2,6 +2,9 @@ const translations = {
     id: {
         appTitle: "Gym Progress & Body Tracker",
         appSubtitle: "Lacak transformasi & performa latihanmu",
+        tabTracker: "Input & Grafik",
+        tabComparison: "Before & After",
+        tabHistory: "Riwayat Entri",
         statCurrentWeight: "Berat Terkini",
         statCurrentBodyFat: "% Lemak Terkini",
         statTotalChange: "Total Perubahan",
@@ -47,6 +50,9 @@ const translations = {
     en: {
         appTitle: "Gym Progress & Body Tracker",
         appSubtitle: "Track your transformation & performance",
+        tabTracker: "Input & Chart",
+        tabComparison: "Before & After",
+        tabHistory: "Entry History",
         statCurrentWeight: "Current Weight",
         statCurrentBodyFat: "Current Body Fat",
         statTotalChange: "Total Change",
@@ -87,7 +93,7 @@ const translations = {
         historyTitle: "Entry History",
         btnExport: "Export JSON",
         btnImport: "Import JSON",
-        footerText: "Gym Progress & Body Tracker • Built for fitness transformation"
+        footerText: "Gym Progress & Built for fitness transformation"
     }
 };
 
@@ -103,6 +109,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLanguageUI();
     renderAll();
 });
+
+// Fungsi Navigasi Tab
+function switchTab(tabName) {
+    ['tracker', 'comparison', 'history'].forEach(t => {
+        const content = document.getElementById(`tabContent-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (t === tabName) {
+            content.classList.remove('hidden');
+            btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-gymaccent text-zinc-950 transition flex items-center space-x-2";
+        } else {
+            content.classList.add('hidden');
+            btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2";
+        }
+    });
+}
 
 function toggleLanguage() {
     currentLang = currentLang === 'id' ? 'en' : 'id';
@@ -177,7 +198,7 @@ function applyCalculatedBF() {
     }
 }
 
-// Kompresi foto otomatis (max-width 400px, quality 0.5) agar tidak melebih kuota localStorage
+// Kompresi foto otomatis agar ukuran kecil dan muat di localStorage
 function previewImage(input, previewId) {
     const previewContainer = document.getElementById(previewId);
     if (input.files && input.files[0]) {
@@ -201,7 +222,6 @@ function previewImage(input, previewId) {
                 canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                // Kualitas kompresi 0.5 agar ukuran file hemat
                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
 
                 previewContainer.innerHTML = `<img src="${compressedDataUrl}" class="h-full w-full object-cover rounded-lg">`;
@@ -251,6 +271,7 @@ function handleFormSubmit(event) {
         });
         calculatedBFValue = null;
         document.getElementById('calcResultDisplay').textContent = '-- %';
+        alert(currentLang === 'id' ? 'Progres berhasil disimpan!' : 'Progress saved successfully!');
     }
 }
 
@@ -262,7 +283,7 @@ function saveToLocalStorage() {
         alert(currentLang === 'id' 
             ? 'Penyimpanan penuh! Hapus beberapa foto/entri lama atau gunakan fitur Ekspor JSON.' 
             : 'Storage full! Delete old photos/entries or use Export JSON.');
-        entries.pop(); // Batalkan penambahan entri terakhir jika memori penuh
+        entries.pop();
         return false;
     }
 }
@@ -396,7 +417,10 @@ function renderComparisonDropdowns() {
 function renderComparison() {
     const s1 = document.getElementById('compDate1');
     const s2 = document.getElementById('compDate2');
-    if (!s1 || !s2 || !s1.value || !s2.value) return;
+    if (!s1 || !s2 || !s1.value || !s2.value) {
+        alert(currentLang === 'id' ? 'Minimal harus ada 2 entri data untuk perbandingan!' : 'Need at least 2 entries for comparison!');
+        return;
+    }
 
     const id1 = parseInt(s1.value);
     const id2 = parseInt(s2.value);
