@@ -1,340 +1,542 @@
-<!DOCTYPE html>
-<html lang="id" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Progress & Body Tracker</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        gymdark: '#121214',
-                        gymcard: '#1a1a1e',
-                        gymborder: '#27272a',
-                        gymaccent: '#22c55e',
-                    }
+const translations = {
+    id: {
+        appTitle: "Gym Progress & Body Tracker",
+        appSubtitle: "Lacak transformasi & performa latihanmu",
+        tabTracker: "Input & Grafik",
+        tabComparison: "Before & After",
+        tabHistory: "Riwayat Entri",
+        statCurrentWeight: "Berat Terkini",
+        statCurrentBodyFat: "% Lemak Terkini",
+        statTotalChange: "Total Perubahan",
+        statTotalEntries: "Total Entri",
+        formTitle: "Catat Progres Baru",
+        labelDate: "Tanggal",
+        labelWeight: "Berat Badan (kg)",
+        labelBodyFat: "% Lemak Tubuh",
+        labelFrontPhoto: "Foto Depan",
+        labelSidePhoto: "Foto Samping Dada",
+        labelBackPhoto: "Foto Belakang",
+        labelNotes: "Catatan Latihan / Diet",
+        btnSave: "Simpan Progres",
+        calcTitle: "Kalkulator Lemak Navy",
+        calcDesc: "Estimasi % lemak tubuh dengan rumus U.S. Navy.",
+        calcGender: "Jenis Kelamin",
+        genderMale: "Pria",
+        genderFemale: "Wanita",
+        calcHeight: "Tinggi (cm)",
+        calcNeck: "Leher (cm)",
+        calcWaist: "Perut / Pinggang (cm)",
+        calcHip: "Pinggul (cm) [Khusus Wanita]",
+        calcResult: "Hasil Estimasi:",
+        btnCalculate: "Hitung",
+        btnApplyBF: "Gunakan ke Form",
+        transJourneyTitle: "Transformation Journey",
+        transJourneySub: "Before & After",
+        boxBefore: "Before",
+        boxAfter: "After",
+        rowDate: "DATE:",
+        rowWeight: "WEIGHT:",
+        rowBodyFat: "BODY FAT:",
+        compEntry1: "Entri 1 (Awal)",
+        compEntry2: "Entri 2 (Terbaru)",
+        compPose: "Pose Foto",
+        btnCompare: "Bandingkan Foto",
+        chartTitle: "Analitik Grafik & Tren Progres",
+        historyTitle: "Riwayat Entri",
+        btnExport: "Ekspor JSON",
+        btnImport: "Impor JSON",
+        btnClearHistory: "Kosongkan Riwayat",
+        footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda"
+    },
+    en: {
+        appTitle: "Gym Progress & Body Tracker",
+        appSubtitle: "Track your transformation & performance",
+        tabTracker: "Input & Chart",
+        tabComparison: "Before & After",
+        tabHistory: "Entry History",
+        statCurrentWeight: "Current Weight",
+        statCurrentBodyFat: "Current Body Fat",
+        statTotalChange: "Total Change",
+        statTotalEntries: "Total Entries",
+        formTitle: "Log New Progress",
+        labelDate: "Date",
+        labelWeight: "Weight (kg) (Optional)",
+        labelBodyFat: "Body Fat % (Optional)",
+        labelFrontPhoto: "Front Pose",
+        labelSidePhoto: "Side Chest Pose",
+        labelBackPhoto: "Back Pose",
+        labelNotes: "Notes (Optional)",
+        btnSave: "Save Progress",
+        calcTitle: "Navy Body Fat Calculator",
+        calcDesc: "Estimate body fat % based on U.S. Navy formula.",
+        calcGender: "Gender",
+        genderMale: "Male",
+        genderFemale: "Female",
+        calcHeight: "Height (cm)",
+        calcNeck: "Neck (cm)",
+        calcWaist: "Abdomen/Waist (cm)",
+        calcHip: "Hip (cm) [Female only]",
+        calcResult: "Result:",
+        btnCalculate: "Calculate",
+        btnApplyBF: "Use in Form",
+        transJourneyTitle: "Transformation Journey",
+        transJourneySub: "Before & After",
+        boxBefore: "Before",
+        boxAfter: "After",
+        rowDate: "DATE:",
+        rowWeight: "WEIGHT:",
+        rowBodyFat: "BODY FAT:",
+        compEntry1: "Entry 1 (Baseline)",
+        compEntry2: "Entry 2 (Recent)",
+        compPose: "Pose",
+        btnCompare: "Compare Photos",
+        chartTitle: "Progress Analytics & Trends",
+        historyTitle: "Entry History",
+        btnExport: "Export JSON",
+        btnImport: "Import JSON",
+        btnClearHistory: "Clear History",
+        footerText: "Gym Progress & Body Tracker • Built for fitness transformation"
+    }
+};
+
+let currentLang = 'id';
+let entries = [];
+let calculatedBFValue = null;
+let progressChartInstance = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('entryDate');
+    if (dateInput) dateInput.valueAsDate = new Date();
+    loadFromLocalStorage();
+    updateLanguageUI();
+    renderAll();
+});
+
+function switchTab(tabName) {
+    ['tracker', 'comparison', 'history'].forEach(t => {
+        const content = document.getElementById(`tabContent-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (t === tabName) {
+            content.classList.remove('hidden');
+            btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-gymaccent text-zinc-950 transition flex items-center space-x-2";
+        } else {
+            content.classList.add('hidden');
+            btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2";
+        }
+    });
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'id' ? 'en' : 'id';
+    const langLabel = document.getElementById('currentLangLabel');
+    if (langLabel) langLabel.textContent = currentLang.toUpperCase();
+    updateLanguageUI();
+}
+
+function updateLanguageUI() {
+    const dict = translations[currentLang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+            el.textContent = dict[key];
+        }
+    });
+}
+
+function toggleGenderFields() {
+    const gender = document.getElementById('calcGender').value;
+    const hipContainer = document.getElementById('hipFieldContainer');
+    const waistLabel = document.getElementById('waistLabel');
+    if (gender === 'female') {
+        if (hipContainer) hipContainer.classList.remove('hidden');
+        if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Lingkar Pinggang (cm)' : 'Waist (cm)';
+    } else {
+        if (hipContainer) hipContainer.classList.add('hidden');
+        if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Perut / Pinggang (cm)' : 'Abdomen/Waist (cm)';
+    }
+}
+
+function calculateNavyBodyFat() {
+    const gender = document.getElementById('calcGender').value;
+    const height = parseFloat(document.getElementById('calcHeightInput').value);
+    const neck = parseFloat(document.getElementById('calcNeckInput').value);
+    const waist = parseFloat(document.getElementById('calcWaistInput').value);
+    
+    if (!height || !neck || !waist) {
+        alert(currentLang === 'id' ? 'Harap isi tinggi, leher, dan lingkar perut/pinggang!' : 'Please fill height, neck, and waist!');
+        return;
+    }
+
+    let bf = 0;
+    if (gender === 'male') {
+        if (waist - neck <= 0) {
+            alert(currentLang === 'id' ? 'Nilai perut harus lebih besar dari leher!' : 'Abdomen must be greater than neck!');
+            return;
+        }
+        bf = 86.010 * Math.log10(waist - neck) - 70.041 * Math.log10(height) + 36.76;
+    } else {
+        const hip = parseFloat(document.getElementById('calcHipInput').value);
+        if (!hip) {
+            alert(currentLang === 'id' ? 'Harap isi lingkar pinggul untuk wanita!' : 'Please fill hip circumference for female!');
+            return;
+        }
+        if (waist + hip - neck <= 0) {
+            alert(currentLang === 'id' ? 'Kombinasi ukuran tidak valid!' : 'Invalid measurement combination!');
+            return;
+        }
+        bf = 163.205 * Math.log10(waist + hip - neck) - 97.684 * Math.log10(height) - 78.387;
+    }
+
+    calculatedBFValue = Math.max(1, Math.min(60, parseFloat(bf.toFixed(1))));
+    document.getElementById('calcResultDisplay').textContent = calculatedBFValue + ' %';
+}
+
+function applyCalculatedBF() {
+    if (calculatedBFValue !== null) {
+        document.getElementById('entryBodyFat').value = calculatedBFValue;
+    } else {
+        alert(currentLang === 'id' ? 'Hitung terlebih dahulu lemak tubuh Anda!' : 'Please calculate body fat first!');
+    }
+}
+
+// Kompresi foto otomatis untuk Front, Side, dan Back
+function previewImage(input, previewId) {
+    const previewContainer = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const MAX_WIDTH = 400;
+                const MAX_HEIGHT = 500;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                } else {
+                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                 }
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+
+                previewContainer.innerHTML = `<img src="${compressedDataUrl}" class="h-full w-full object-cover rounded-lg">`;
+                previewContainer.dataset.base64 = compressedDataUrl;
+            }
+            img.src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function handleFormSubmit(event) {
+    event.preventDefault();
+    const date = document.getElementById('entryDate').value;
+    const weight = parseFloat(document.getElementById('entryWeight').value) || null;
+    const bodyFat = parseFloat(document.getElementById('entryBodyFat').value) || null;
+    const notes = document.getElementById('entryNotes').value;
+
+    const frontPhoto = document.getElementById('frontPreview')?.dataset?.base64 || null;
+    const sidePhoto = document.getElementById('sidePreview')?.dataset?.base64 || null;
+    const backPhoto = document.getElementById('backPreview')?.dataset?.base64 || null;
+
+    const newEntry = {
+        id: Date.now(),
+        date,
+        weight,
+        bodyFat,
+        notes,
+        frontPhoto,
+        sidePhoto,
+        backPhoto
+    };
+
+    entries.push(newEntry);
+    entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (saveToLocalStorage()) {
+        renderAll();
+        event.target.reset();
+        document.getElementById('entryDate').valueAsDate = new Date();
+        
+        // Reset preview containers and dataset
+        ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = '<i class="fa-solid fa-camera text-xl"></i>';
+                delete el.dataset.base64;
+            }
+        });
+        
+        // Reset file inputs
+        ['frontPhotoInput', 'sidePhotoInput', 'backPhotoInput'].forEach(id => {
+            const inputEl = document.getElementById(id);
+            if (inputEl) inputEl.value = '';
+        });
+
+        calculatedBFValue = null;
+        document.getElementById('calcResultDisplay').textContent = '-- %';
+        alert(currentLang === 'id' ? 'Progres berhasil disimpan!' : 'Progress saved successfully!');
+    }
+}
+
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('gym_tracker_entries', JSON.stringify(entries));
+        return true;
+    } catch (e) {
+        alert(currentLang === 'id' 
+            ? 'Penyimpanan penuh! Hapus beberapa foto/entri lama atau gunakan fitur Ekspor JSON.' 
+            : 'Storage full! Delete old photos/entries or use Export JSON.');
+        entries.pop();
+        return false;
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        const data = localStorage.getItem('gym_tracker_entries');
+        if (data) { entries = JSON.parse(data); }
+    } catch (e) {
+        console.error("Gagal membaca localStorage:", e);
+        entries = [];
+    }
+}
+
+function clearAllHistory() {
+    const msg = currentLang === 'id' 
+        ? 'Apakah Anda yakin ingin mengosongkan seluruh riwayat dan foto yang tersimpan?' 
+        : 'Are you sure you want to clear all history and saved photos?';
+    if (confirm(msg)) {
+        entries = [];
+        localStorage.removeItem('gym_tracker_entries');
+        renderAll();
+        const compContainer = document.getElementById('comparisonResultContainer');
+        if (compContainer) compContainer.classList.add('hidden');
+        alert(currentLang === 'id' ? 'Riwayat berhasil dikosongkan.' : 'History cleared successfully.');
+    }
+}
+
+function renderAll() {
+    renderStats();
+    renderHistory();
+    renderComparisonDropdowns();
+    renderChart();
+}
+
+function renderStats() {
+    const totalEntriesEl = document.getElementById('statEntries');
+    if (totalEntriesEl) totalEntriesEl.textContent = entries.length;
+
+    const weighted = entries.filter(e => e.weight !== null);
+    const bfs = entries.filter(e => e.bodyFat !== null);
+
+    const statWeightEl = document.getElementById('statWeight');
+    const changeEl = document.getElementById('statChange');
+
+    if (weighted.length > 0) {
+        const curW = weighted[weighted.length - 1].weight;
+        const startW = weighted[0].weight;
+        const diff = (curW - startW).toFixed(1);
+        if (statWeightEl) statWeightEl.innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        if (changeEl) {
+            changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diff} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+            changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-400'}`;
+        }
+    } else {
+        if (statWeightEl) statWeightEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        if (changeEl) changeEl.textContent = '0.0 kg';
+    }
+
+    const statBodyFatEl = document.getElementById('statBodyFat');
+    if (bfs.length > 0) {
+        if (statBodyFatEl) statBodyFatEl.innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-zinc-400">%</span>`;
+    } else {
+        if (statBodyFatEl) statBodyFatEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">%</span>`;
+    }
+}
+
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (entries.length === 0) {
+        container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">${currentLang === 'id' ? 'Belum ada data tercatat.' : 'No entries recorded yet.'}</p>`;
+        return;
+    }
+
+    [...entries].reverse().forEach(entry => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4';
+        
+        let photosHtml = '';
+        ['frontPhoto', 'sidePhoto', 'backPhoto'].forEach(pType => {
+            if (entry[pType]) {
+                photosHtml += `<img src="${entry[pType]}" onclick="openLightbox('${entry[pType]}')" class="h-16 w-16 object-cover rounded-lg cursor-pointer hover:opacity-85 border border-zinc-700">`;
+            }
+        });
+
+        card.innerHTML = `
+            <div class="space-y-1">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm font-bold text-gymaccent">${entry.date}</span>
+                    <span class="text-xs text-zinc-400">Weight: <strong class="text-zinc-200">${entry.weight !== null ? entry.weight + ' kg' : 'N/A'}</strong></span>
+                    <span class="text-xs text-zinc-400">Body Fat: <strong class="text-zinc-200">${entry.bodyFat !== null ? entry.bodyFat + '%' : 'N/A'}</strong></span>
+                </div>
+                ${entry.notes ? `<p class="text-xs text-zinc-300 bg-zinc-950 p-2 rounded-lg mt-1">${entry.notes}</p>` : ''}
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex space-x-2">${photosHtml}</div>
+                <button onclick="deleteEntry(${entry.id})" class="text-red-400 hover:text-red-300 p-2 text-sm"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function deleteEntry(id) {
+    if (confirm(currentLang === 'id' ? 'Hapus entri ini?' : 'Delete this entry?')) {
+        entries = entries.filter(e => e.id !== id);
+        saveToLocalStorage();
+        renderAll();
+    }
+}
+
+function openLightbox(src) {
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImg');
+    if (modal && img) {
+        img.src = src;
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeLightbox() {
+    const modal = document.getElementById('lightboxModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function renderComparisonDropdowns() {
+    const s1 = document.getElementById('compDate1');
+    const s2 = document.getElementById('compDate2');
+    if (!s1 || !s2) return;
+    
+    s1.innerHTML = ''; s2.innerHTML = '';
+
+    entries.forEach(entry => {
+        const txt = `${entry.date} (${entry.weight !== null ? entry.weight + 'kg' : 'N/A'})`;
+        s1.appendChild(new Option(txt, entry.id));
+        s2.appendChild(new Option(txt, entry.id));
+    });
+
+    if (entries.length > 1) { s2.selectedIndex = entries.length - 1; }
+}
+
+function renderComparison() {
+    const s1 = document.getElementById('compDate1');
+    const s2 = document.getElementById('compDate2');
+    if (!s1 || !s2 || !s1.value || !s2.value) {
+        alert(currentLang === 'id' ? 'Minimal harus ada 2 entri data untuk perbandingan!' : 'Need at least 2 entries for comparison!');
+        return;
+    }
+
+    const id1 = parseInt(s1.value);
+    const id2 = parseInt(s2.value);
+    const poseType = document.getElementById('compPoseType').value + 'Photo';
+
+    const e1 = entries.find(e => e.id === id1);
+    const e2 = entries.find(e => e.id === id2);
+
+    if (!e1 || !e2) return;
+
+    const container = document.getElementById('comparisonResultContainer');
+    if (container) container.classList.remove('hidden');
+    
+    document.getElementById('compDateDisplay1').textContent = e1.date;
+    document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
+    document.getElementById('compBF1').textContent = e1.bodyFat !== null ? e1.bodyFat + '%' : '--';
+    document.getElementById('compImageContainer1').innerHTML = e1[poseType] 
+        ? `<img src="${e1[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e1[poseType]}')">`
+        : `<span class="text-xs text-zinc-500">No photo</span>`;
+
+    document.getElementById('compDateDisplay2').textContent = e2.date;
+    document.getElementById('compWeight2').textContent = e2.weight !== null ? e2.weight + ' kg' : '--';
+    document.getElementById('compBF2').textContent = e2.bodyFat !== null ? e2.bodyFat + '%' : '--';
+    document.getElementById('compImageContainer2').innerHTML = e2[poseType] 
+        ? `<img src="${e2[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e2[poseType]}')">`
+        : `<span class="text-xs text-zinc-500">No photo</span>`;
+
+    const summaryEl = document.getElementById('comparisonDiffSummary');
+    if (e1.weight !== null && e2.weight !== null) {
+        const diffW = (e2.weight - e1.weight).toFixed(1);
+        if (summaryEl) {
+            summaryEl.innerHTML = `Net Weight Difference: <strong class="${diffW <= 0 ? 'text-green-400' : 'text-amber-400'}">${diffW > 0 ? '+' : ''}${diffW} kg</strong>`;
+        }
+    } else {
+        if (summaryEl) summaryEl.innerHTML = '';
+    }
+}
+
+function renderChart() {
+    const canvas = document.getElementById('progressChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const labels = entries.map(e => e.date);
+    const weights = entries.map(e => e.weight);
+    const bodyFats = entries.map(e => e.bodyFat);
+
+    if (progressChartInstance) { progressChartInstance.destroy(); }
+
+    progressChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Weight (kg)', data: weights, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', borderWidth: 2, tension: 0.3, yAxisID: 'y' },
+                { label: 'Body Fat (%)', data: bodyFats, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, tension: 0.3, yAxisID: 'y1' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } },
+                y: { type: 'linear', display: true, position: 'left', grid: { color: '#27272a' }, ticks: { color: '#22c55e' } },
+                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#3b82f6' } }
             }
         }
-    </script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-gymdark text-zinc-100 min-h-screen font-sans antialiased pb-16">
-    <!-- Header / Navbar -->
-    <header class="border-b border-gymborder bg-gymcard/85 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-gymaccent/20 p-2.5 rounded-xl text-gymaccent">
-                    <i class="fa-solid fa-dumbbell text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight" data-i18n="appTitle">Gym Progress & Body Tracker</h1>
-                    <p class="text-xs text-zinc-400" data-i18n="appSubtitle">Track your transformation & performance</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-3">
-                <button id="langToggleBtn" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold transition">
-                    🌐 <span id="currentLangLabel">ID</span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Navigation Tabs -->
-        <div class="max-w-7xl mx-auto px-4 flex space-x-2 border-t border-gymborder overflow-x-auto py-2">
-            <button onclick="switchTab('tracker')" id="tabBtn-tracker" class="px-4 py-2 text-xs font-bold rounded-lg bg-gymaccent text-zinc-950 transition flex items-center space-x-2">
-                <i class="fa-solid fa-plus-circle"></i>
-                <span data-i18n="tabTracker">Input & Grafik</span>
-            </button>
-            <button onclick="switchTab('comparison')" id="tabBtn-comparison" class="px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2">
-                <i class="fa-solid fa-columns"></i>
-                <span data-i18n="tabComparison">Before & After</span>
-            </button>
-            <button onclick="switchTab('history')" id="tabBtn-history" class="px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2">
-                <i class="fa-solid fa-history"></i>
-                <span data-i18n="tabHistory">Riwayat Entri</span>
-            </button>
-        </div>
-    </header>
+    });
+}
 
-    <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <!-- Stats Summary -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentWeight">Current Weight</p>
-                <p id="statWeight" class="text-2xl font-bold mt-1 text-zinc-100">-- <span class="text-sm font-normal text-zinc-400">kg</span></p>
-            </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentBodyFat">Current Body Fat</p>
-                <p id="statBodyFat" class="text-2xl font-bold mt-1 text-zinc-100">-- <span class="text-sm font-normal text-zinc-400">%</span></p>
-            </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalChange">Total Change</p>
-                <p id="statChange" class="text-2xl font-bold mt-1 text-zinc-400">0.0 <span class="text-sm font-normal text-zinc-400">kg</span></p>
-            </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalEntries">Total Entries</p>
-                <p id="statEntries" class="text-2xl font-bold mt-1 text-gymaccent">0</p>
-            </div>
-        </section>
+function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
+    const anchor = document.createElement('a');
+    anchor.href = dataStr;
+    anchor.download = `gym_progress_backup_${new Date().toISOString().split('T')[0]}.json`;
+    anchor.click();
+    anchor.remove();
+}
 
-        <!-- ================= TAB 1: TRACKER & FORM ================= -->
-        <div id="tabContent-tracker" class="space-y-8">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Form Section -->
-                <section class="lg:col-span-2 bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-                    <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
-                        <i class="fa-solid fa-plus-circle text-gymaccent"></i>
-                        <span data-i18n="formTitle">Log New Progress</span>
-                    </h2>
-                    <form id="progressForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1">
-                                    <span data-i18n="labelDate">Date</span> <span class="text-red-500">*</span>
-                                </label>
-                                <input type="date" id="entryDate" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelWeight">Weight (kg) (Optional)</label>
-                                <input type="number" step="0.1" id="entryWeight" placeholder="e.g., 67.6" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelBodyFat">Body Fat % (Optional)</label>
-                                <input type="number" step="0.1" id="entryBodyFat" placeholder="e.g., 15.5" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                            </div>
-                        </div>
-
-                        <!-- Photo Uploads (Fixed IDs) -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelFrontPhoto">Front Pose</label>
-                                <input type="file" id="frontPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'frontPreview')">
-                                <label for="frontPhotoInput" class="cursor-pointer block">
-                                    <div id="frontPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
-                                        <i class="fa-solid fa-camera text-xl"></i>
-                                    </div>
-                                </label>
-                            </div>
-                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelSidePhoto">Side Chest Pose</label>
-                                <input type="file" id="sidePhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'sidePreview')">
-                                <label for="sidePhotoInput" class="cursor-pointer block">
-                                    <div id="sidePreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
-                                        <i class="fa-solid fa-camera text-xl"></i>
-                                    </div>
-                                </label>
-                            </div>
-                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
-                                <input type="file" id="backPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
-                                <label for="backPhotoInput" class="cursor-pointer block">
-                                    <div id="backPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
-                                        <i class="fa-solid fa-camera text-xl"></i>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelNotes">Notes (Optional)</label>
-                            <textarea id="entryNotes" rows="2" placeholder="Workout notes, diet, PRs..." class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></textarea>
-                        </div>
-
-                        <button type="submit" class="w-full bg-gymaccent text-zinc-950 font-bold py-2.5 rounded-lg hover:bg-green-400 transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-save"></i>
-                            <span data-i18n="btnSave">Save Progress</span>
-                        </button>
-                    </form>
-                </section>
-
-                <!-- Navy Body Fat Calculator -->
-                <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                    <div>
-                        <h2 class="text-lg font-semibold mb-2 flex items-center space-x-2">
-                            <i class="fa-solid fa-calculator text-gymaccent"></i>
-                            <span data-i18n="calcTitle">Navy Body Fat Calculator</span>
-                        </h2>
-                        <p class="text-xs text-zinc-400 mb-4" data-i18n="calcDesc">Estimate body fat % based on U.S. Navy formula.</p>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcGender">Gender</label>
-                                <select id="calcGender" onchange="toggleGenderFields()" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                                    <option value="male" data-i18n="genderMale">Male</option>
-                                    <option value="female" data-i18n="genderFemale">Female</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHeight">Height (cm)</label>
-                                    <input type="number" step="0.1" id="calcHeightInput" placeholder="169" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcNeck">Neck (cm)</label>
-                                    <input type="number" step="0.1" id="calcNeckInput" placeholder="38" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" id="waistLabel" data-i18n="calcWaist">Abdomen/Waist (cm)</label>
-                                <input type="number" step="0.1" id="calcWaistInput" placeholder="80" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                            </div>
-                            <div id="hipFieldContainer" class="hidden">
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHip">Hip (cm)</label>
-                                <input type="number" step="0.1" id="calcHipInput" placeholder="95" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 pt-4 border-t border-zinc-800">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs text-zinc-400" data-i18n="calcResult">Result:</span>
-                            <span id="calcResultDisplay" class="text-xl font-bold text-gymaccent">-- %</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" onclick="calculateNavyBodyFat()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnCalculate">Calculate</button>
-                            <button type="button" onclick="applyCalculatedBF()" class="bg-gymaccent/20 text-gymaccent hover:bg-gymaccent/30 border border-gymaccent/50 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnApplyBF">Use in Form</button>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Progress Analytics Chart -->
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
-                    <i class="fa-solid fa-chart-line text-gymaccent"></i>
-                    <span data-i18n="chartTitle">Progress Analytics & Trends</span>
-                </h2>
-                <div class="h-80 w-full">
-                    <canvas id="progressChart"></canvas>
-                </div>
-            </section>
-        </div>
-
-        <!-- ================= TAB 2: BEFORE & AFTER COMPARISON ================= -->
-        <div id="tabContent-comparison" class="space-y-8 hidden">
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl font-black tracking-wider uppercase text-zinc-100" data-i18n="transJourneyTitle">Transformation Journey</h2>
-                    <p class="text-xs text-zinc-400 tracking-widest uppercase mt-1" data-i18n="transJourneySub">Before & After</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry1">Entry 1 (Baseline)</label>
-                        <select id="compDate1" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry2">Entry 2 (Recent)</label>
-                        <select id="compDate2" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compPose">Pose</label>
-                        <select id="compPoseType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                            <option value="front" data-i18n="labelFrontPhoto">Front Pose</option>
-                            <option value="side" data-i18n="labelSidePhoto">Side Chest Pose</option>
-                            <option value="back" data-i18n="labelBackPhoto">Back Pose</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="text-center mb-8">
-                    <button type="button" onclick="renderComparison()" class="px-6 py-2.5 bg-gymaccent text-zinc-950 font-bold text-sm rounded-lg hover:bg-green-400 transition shadow-lg" data-i18n="btnCompare">Compare Photos</button>
-                </div>
-
-                <!-- Transformation Template Layout -->
-                <div id="comparisonResultContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto hidden">
-                    <!-- BEFORE Box -->
-                    <div class="border-2 border-zinc-700 bg-zinc-900/90 rounded-xl overflow-hidden shadow-2xl flex flex-col">
-                        <div class="bg-zinc-800 text-zinc-100 py-2.5 text-center font-bold tracking-widest uppercase text-sm border-b border-zinc-700" data-i18n="boxBefore">Before</div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div id="compImageContainer1" class="h-96 bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden mb-4 border border-zinc-800"></div>
-                            <div class="space-y-2 text-sm border-t border-zinc-800 pt-3">
-                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowDate">DATE:</span>
-                                    <span id="compDateDisplay1" class="font-bold text-zinc-200">--</span>
-                                </div>
-                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowWeight">WEIGHT:</span>
-                                    <span id="compWeight1" class="font-bold text-zinc-200">--</span>
-                                </div>
-                                <div class="flex justify-between items-center py-1">
-                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowBodyFat">BODY FAT:</span>
-                                    <span id="compBF1" class="font-bold text-zinc-200">--</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AFTER Box -->
-                    <div class="border-2 border-zinc-700 bg-zinc-900/90 rounded-xl overflow-hidden shadow-2xl flex flex-col">
-                        <div class="bg-zinc-800 text-zinc-100 py-2.5 text-center font-bold tracking-widest uppercase text-sm border-b border-zinc-700" data-i18n="boxAfter">After</div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div id="compImageContainer2" class="h-96 bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden mb-4 border border-zinc-800"></div>
-                            <div class="space-y-2 text-sm border-t border-zinc-800 pt-3">
-                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowDate">DATE:</span>
-                                    <span id="compDateDisplay2" class="font-bold text-zinc-200">--</span>
-                                </div>
-                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowWeight">WEIGHT:</span>
-                                    <span id="compWeight2" class="font-bold text-zinc-200">--</span>
-                                </div>
-                                <div class="flex justify-between items-center py-1">
-                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowBodyFat">BODY FAT:</span>
-                                    <span id="compBF2" class="font-bold text-zinc-200">--</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="comparisonDiffSummary" class="text-center mt-6 text-sm font-medium text-zinc-300"></div>
-            </section>
-        </div>
-
-        <!-- ================= TAB 3: HISTORY ================= -->
-        <div id="tabContent-history" class="space-y-8 hidden">
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                    <h2 class="text-lg font-semibold flex items-center space-x-2">
-                        <i class="fa-solid fa-history text-gymaccent"></i>
-                        <span data-i18n="historyTitle">Entry History</span>
-                    </h2>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="exportData()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnExport">Export JSON</button>
-                        <label class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
-                            <span data-i18n="btnImport">Import JSON</span>
-                            <input type="file" accept=".json" onchange="importData(event)" class="hidden">
-                        </label>
-                        <button onclick="clearAllHistory()" class="px-3 py-1.5 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 text-xs font-semibold rounded-lg transition" data-i18n="btnClearHistory">Kosongkan Riwayat</button>
-                    </div>
-                </div>
-                <div id="historyList" class="space-y-4"></div>
-            </section>
-        </div>
-    </main>
-
-    <!-- Lightbox Modal -->
-    <div id="lightboxModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
-        <div class="relative max-w-4xl max-h-full">
-            <button class="absolute -top-10 right-0 text-white text-2xl font-bold">&times;</button>
-            <img id="lightboxImg" src="" class="max-h-[85vh] max-w-full rounded-xl object-contain">
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="border-t border-gymborder bg-gymcard py-6 text-center text-xs text-zinc-500 mt-12">
-        <p data-i18n="footerText">Gym Progress & Body Tracker • Built for fitness transformation</p>
-    </footer>
-
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- App Script -->
-    <script src="app.js"></script>
-</body>
-</html>
+function importData(event) {
+    const reader = new FileReader();
+    if (event.target.files[0]) {
+        reader.readAsText(event.target.files[0], "UTF-8");
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    entries = imported;
+                    saveToLocalStorage();
+                    renderAll();
+                    alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
+                } else { alert('Format JSON tidak valid.'); }
+            } catch (err) { alert('Gagal membaca file.'); }
+        }
+    }
+}
