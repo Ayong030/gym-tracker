@@ -1,6 +1,3 @@
-# gym-tracker
-Place to store your gym Progress 
-
 # Gym Progress & Body Tracker
 
 Aplikasi web modern untuk mencatat progres gym, foto bentuk tubuh (Front, Side, Back), berat badan, dan persentase lemak tubuh (dilengkapi kalkulator Navy Method). Mendukung bahasa Indonesia dan Inggris secara instan.
