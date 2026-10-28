@@ -26,7 +26,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gymdark text-zinc-100 min-h-screen font-sans antialiased">
+<body class="bg-gymdark text-zinc-100 min-h-screen font-sans antialiased pb-16">
     <!-- Header / Navbar -->
     <header class="border-b border-gymborder bg-gymcard/85 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -45,10 +45,26 @@
                 </button>
             </div>
         </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 flex space-x-2 border-t border-gymborder overflow-x-auto py-2">
+            <button onclick="switchTab('tracker')" id="tabBtn-tracker" class="px-4 py-2 text-xs font-bold rounded-lg bg-gymaccent text-zinc-950 transition flex items-center space-x-2">
+                <i class="fa-solid fa-plus-circle"></i>
+                <span data-i18n="tabTracker">Input & Grafik</span>
+            </button>
+            <button onclick="switchTab('comparison')" id="tabBtn-comparison" class="px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2">
+                <i class="fa-solid fa-columns"></i>
+                <span data-i18n="tabComparison">Before & After</span>
+            </button>
+            <button onclick="switchTab('history')" id="tabBtn-history" class="px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2">
+                <i class="fa-solid fa-history"></i>
+                <span data-i18n="tabHistory">Riwayat Entri</span>
+            </button>
+        </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <!-- Stats Summary -->
+        <!-- Stats Summary (Selalu tampil di atas) -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentWeight">Current Weight</p>
@@ -68,232 +84,238 @@
             </div>
         </section>
 
-        <!-- Grid Layout: Form & Navy Calculator -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Form Section -->
-            <section class="lg:col-span-2 bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
-                    <i class="fa-solid fa-plus-circle text-gymaccent"></i>
-                    <span data-i18n="formTitle">Log New Progress</span>
-                </h2>
-                <form id="progressForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1">
-                                <span data-i18n="labelDate">Date</span> <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" id="entryDate" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelWeight">Weight (kg) (Optional)</label>
-                            <input type="number" step="0.1" id="entryWeight" placeholder="e.g., 67.6" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelBodyFat">Body Fat % (Optional)</label>
-                            <input type="number" step="0.1" id="entryBodyFat" placeholder="e.g., 15.5" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                        </div>
-                    </div>
-
-                    <!-- Photo Uploads -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                            <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelFrontPhoto">Front Pose</label>
-                            <input type="file" id="frontPhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'frontPreview')">
-                            <label for="frontPhoto" class="cursor-pointer block">
-                                <div id="frontPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
-                                    <i class="fa-solid fa-camera text-xl"></i>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                            <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelSidePhoto">Side Chest Pose</label>
-                            <input type="file" id="sidePhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'sidePreview')">
-                            <label for="sidePhoto" class="cursor-pointer block">
-                                <div id="sidePreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
-                                    <i class="fa-solid fa-camera text-xl"></i>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                            <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
-                            <input type="file" id="backPhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
-                            <label for="backPhoto" class="cursor-pointer block">
-                                <div id="backPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
-                                    <i class="fa-solid fa-camera text-xl"></i>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelNotes">Notes (Optional)</label>
-                        <textarea id="entryNotes" rows="2" placeholder="Workout notes, diet, PRs..." class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></textarea>
-                    </div>
-
-                    <button type="submit" class="w-full bg-gymaccent text-zinc-950 font-bold py-2.5 rounded-lg hover:bg-green-400 transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-save"></i>
-                        <span data-i18n="btnSave">Save Progress</span>
-                    </button>
-                </form>
-            </section>
-
-            <!-- Navy Body Fat Calculator -->
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                <div>
-                    <h2 class="text-lg font-semibold mb-2 flex items-center space-x-2">
-                        <i class="fa-solid fa-calculator text-gymaccent"></i>
-                        <span data-i18n="calcTitle">Navy Body Fat Calculator</span>
+        <!-- ================= TAB 1: TRACKER & FORM ================= -->
+        <div id="tabContent-tracker" class="space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Form Section -->
+                <section class="lg:col-span-2 bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
+                        <i class="fa-solid fa-plus-circle text-gymaccent"></i>
+                        <span data-i18n="formTitle">Log New Progress</span>
                     </h2>
-                    <p class="text-xs text-zinc-400 mb-4" data-i18n="calcDesc">Estimate body fat % based on U.S. Navy formula.</p>
-                    
-                    <div class="space-y-3">
+                    <form id="progressForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1">
+                                    <span data-i18n="labelDate">Date</span> <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" id="entryDate" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelWeight">Weight (kg) (Optional)</label>
+                                <input type="number" step="0.1" id="entryWeight" placeholder="e.g., 67.6" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelBodyFat">Body Fat % (Optional)</label>
+                                <input type="number" step="0.1" id="entryBodyFat" placeholder="e.g., 15.5" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                            </div>
+                        </div>
+
+                        <!-- Photo Uploads -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
+                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelFrontPhoto">Front Pose</label>
+                                <input type="file" id="frontPhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'frontPreview')">
+                                <label for="frontPhoto" class="cursor-pointer block">
+                                    <div id="frontPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                        <i class="fa-solid fa-camera text-xl"></i>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
+                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelSidePhoto">Side Chest Pose</label>
+                                <input type="file" id="sidePhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'sidePreview')">
+                                <label for="sidePhoto" class="cursor-pointer block">
+                                    <div id="sidePhoto" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                        <i class="fa-solid fa-camera text-xl"></i>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
+                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
+                                <input type="file" id="backPhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
+                                <label for="backPhoto" class="cursor-pointer block">
+                                    <div id="backPhoto" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                        <i class="fa-solid fa-camera text-xl"></i>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcGender">Gender</label>
-                            <select id="calcGender" onchange="toggleGenderFields()" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                                <option value="male" data-i18n="genderMale">Male</option>
-                                <option value="female" data-i18n="genderFemale">Female</option>
-                            </select>
+                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelNotes">Notes (Optional)</label>
+                            <textarea id="entryNotes" rows="2" placeholder="Workout notes, diet, PRs..." class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gymaccent text-zinc-950 font-bold py-2.5 rounded-lg hover:bg-green-400 transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-save"></i>
+                            <span data-i18n="btnSave">Save Progress</span>
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Navy Body Fat Calculator -->
+                <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2 flex items-center space-x-2">
+                            <i class="fa-solid fa-calculator text-gymaccent"></i>
+                            <span data-i18n="calcTitle">Navy Body Fat Calculator</span>
+                        </h2>
+                        <p class="text-xs text-zinc-400 mb-4" data-i18n="calcDesc">Estimate body fat % based on U.S. Navy formula.</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcGender">Gender</label>
+                                <select id="calcGender" onchange="toggleGenderFields()" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                    <option value="male" data-i18n="genderMale">Male</option>
+                                    <option value="female" data-i18n="genderFemale">Female</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHeight">Height (cm)</label>
+                                    <input type="number" step="0.1" id="calcHeightInput" placeholder="169" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcNeck">Neck (cm)</label>
+                                    <input type="number" step="0.1" id="calcNeckInput" placeholder="38" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1" id="waistLabel" data-i18n="calcWaist">Abdomen/Waist (cm)</label>
+                                <input type="number" step="0.1" id="calcWaistInput" placeholder="80" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                            </div>
+                            <div id="hipFieldContainer" class="hidden">
+                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHip">Hip (cm)</label>
+                                <input type="number" step="0.1" id="calcHipInput" placeholder="95" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-zinc-800">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs text-zinc-400" data-i18n="calcResult">Result:</span>
+                            <span id="calcResultDisplay" class="text-xl font-bold text-gymaccent">-- %</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHeight">Height (cm)</label>
-                                <input type="number" step="0.1" id="calcHeightInput" placeholder="169" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcNeck">Neck (cm)</label>
-                                <input type="number" step="0.1" id="calcNeckInput" placeholder="38" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" id="waistLabel" data-i18n="calcWaist">Abdomen/Waist (cm)</label>
-                            <input type="number" step="0.1" id="calcWaistInput" placeholder="80" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                        </div>
-                        <div id="hipFieldContainer" class="hidden">
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHip">Hip (cm)</label>
-                            <input type="number" step="0.1" id="calcHipInput" placeholder="95" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                            <button type="button" onclick="calculateNavyBodyFat()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnCalculate">Calculate</button>
+                            <button type="button" onclick="applyCalculatedBF()" class="bg-gymaccent/20 text-gymaccent hover:bg-gymaccent/30 border border-gymaccent/50 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnApplyBF">Use in Form</button>
                         </div>
                     </div>
-                </div>
+                </section>
+            </div>
 
-                <div class="mt-6 pt-4 border-t border-zinc-800">
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-xs text-zinc-400" data-i18n="calcResult">Result:</span>
-                        <span id="calcResultDisplay" class="text-xl font-bold text-gymaccent">-- %</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="calculateNavyBodyFat()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnCalculate">Calculate</button>
-                        <button type="button" onclick="applyCalculatedBF()" class="bg-gymaccent/20 text-gymaccent hover:bg-gymaccent/30 border border-gymaccent/50 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnApplyBF">Use in Form</button>
-                    </div>
+            <!-- Progress Analytics Chart -->
+            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-line text-gymaccent"></i>
+                    <span data-i18n="chartTitle">Progress Analytics & Trends</span>
+                </h2>
+                <div class="h-80 w-full">
+                    <canvas id="progressChart"></canvas>
                 </div>
             </section>
         </div>
 
-        <!-- Side-by-Side Comparison (Template Matching Reference Image) -->
-        <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-black tracking-wider uppercase text-zinc-100" data-i18n="transJourneyTitle">Transformation Journey</h2>
-                <p class="text-xs text-zinc-400 tracking-widest uppercase mt-1" data-i18n="transJourneySub">Before & After</p>
-            </div>
+        <!-- ================= TAB 2: BEFORE & AFTER COMPARISON ================= -->
+        <div id="tabContent-comparison" class="space-y-8 hidden">
+            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-black tracking-wider uppercase text-zinc-100" data-i18n="transJourneyTitle">Transformation Journey</h2>
+                    <p class="text-xs text-zinc-400 tracking-widest uppercase mt-1" data-i18n="transJourneySub">Before & After</p>
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry1">Entry 1 (Baseline)</label>
-                    <select id="compDate1" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry1">Entry 1 (Baseline)</label>
+                        <select id="compDate1" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry2">Entry 2 (Recent)</label>
+                        <select id="compDate2" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compPose">Pose</label>
+                        <select id="compPoseType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                            <option value="front" data-i18n="labelFrontPhoto">Front Pose</option>
+                            <option value="side" data-i18n="labelSidePhoto">Side Chest Pose</option>
+                            <option value="back" data-i18n="labelBackPhoto">Back Pose</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry2">Entry 2 (Recent)</label>
-                    <select id="compDate2" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
+                <div class="text-center mb-8">
+                    <button type="button" onclick="renderComparison()" class="px-6 py-2.5 bg-gymaccent text-zinc-950 font-bold text-sm rounded-lg hover:bg-green-400 transition shadow-lg" data-i18n="btnCompare">Compare Photos</button>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compPose">Pose</label>
-                    <select id="compPoseType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                        <option value="front" data-i18n="labelFrontPhoto">Front Pose</option>
-                        <option value="side" data-i18n="labelSidePhoto">Side Chest Pose</option>
-                        <option value="back" data-i18n="labelBackPhoto">Back Pose</option>
-                    </select>
-                </div>
-            </div>
-            <div class="text-center mb-8">
-                <button type="button" onclick="renderComparison()" class="px-6 py-2.5 bg-gymaccent text-zinc-950 font-bold text-sm rounded-lg hover:bg-green-400 transition shadow-lg" data-i18n="btnCompare">Compare Photos</button>
-            </div>
 
-            <!-- Transformation Template Layout -->
-            <div id="comparisonResultContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto hidden">
-                <!-- BEFORE Box -->
-                <div class="border-2 border-zinc-700 bg-zinc-900/90 rounded-xl overflow-hidden shadow-2xl flex flex-col">
-                    <div class="bg-zinc-800 text-zinc-100 py-2.5 text-center font-bold tracking-widest uppercase text-sm border-b border-zinc-700" data-i18n="boxBefore">Before</div>
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div id="compImageContainer1" class="h-96 bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden mb-4 border border-zinc-800"></div>
-                        <div class="space-y-2 text-sm border-t border-zinc-800 pt-3">
-                            <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowDate">DATE:</span>
-                                <span id="compDateDisplay1" class="font-bold text-zinc-200">--</span>
+                <!-- Transformation Template Layout -->
+                <div id="comparisonResultContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto hidden">
+                    <!-- BEFORE Box -->
+                    <div class="border-2 border-zinc-700 bg-zinc-900/90 rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                        <div class="bg-zinc-800 text-zinc-100 py-2.5 text-center font-bold tracking-widest uppercase text-sm border-b border-zinc-700" data-i18n="boxBefore">Before</div>
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div id="compImageContainer1" class="h-96 bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden mb-4 border border-zinc-800"></div>
+                            <div class="space-y-2 text-sm border-t border-zinc-800 pt-3">
+                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
+                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowDate">DATE:</span>
+                                    <span id="compDateDisplay1" class="font-bold text-zinc-200">--</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
+                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowWeight">WEIGHT:</span>
+                                    <span id="compWeight1" class="font-bold text-zinc-200">--</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1">
+                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowBodyFat">BODY FAT:</span>
+                                    <span id="compBF1" class="font-bold text-zinc-200">--</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowWeight">WEIGHT:</span>
-                                <span id="compWeight1" class="font-bold text-zinc-200">--</span>
-                            </div>
-                            <div class="flex justify-between items-center py-1">
-                                <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowBodyFat">BODY FAT:</span>
-                                <span id="compBF1" class="font-bold text-zinc-200">--</span>
+                        </div>
+                    </div>
+
+                    <!-- AFTER Box -->
+                    <div class="border-2 border-zinc-700 bg-zinc-900/90 rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                        <div class="bg-zinc-800 text-zinc-100 py-2.5 text-center font-bold tracking-widest uppercase text-sm border-b border-zinc-700" data-i18n="boxAfter">After</div>
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div id="compImageContainer2" class="h-96 bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden mb-4 border border-zinc-800"></div>
+                            <div class="space-y-2 text-sm border-t border-zinc-800 pt-3">
+                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
+                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowDate">DATE:</span>
+                                    <span id="compDateDisplay2" class="font-bold text-zinc-200">--</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
+                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowWeight">WEIGHT:</span>
+                                    <span id="compWeight2" class="font-bold text-zinc-200">--</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1">
+                                    <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowBodyFat">BODY FAT:</span>
+                                    <span id="compBF2" class="font-bold text-zinc-200">--</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div id="comparisonDiffSummary" class="text-center mt-6 text-sm font-medium text-zinc-300"></div>
+            </section>
+        </div>
 
-                <!-- AFTER Box -->
-                <div class="border-2 border-zinc-700 bg-zinc-900/90 rounded-xl overflow-hidden shadow-2xl flex flex-col">
-                    <div class="bg-zinc-800 text-zinc-100 py-2.5 text-center font-bold tracking-widest uppercase text-sm border-b border-zinc-700" data-i18n="boxAfter">After</div>
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div id="compImageContainer2" class="h-96 bg-zinc-950 rounded-lg flex items-center justify-center overflow-hidden mb-4 border border-zinc-800"></div>
-                        <div class="space-y-2 text-sm border-t border-zinc-800 pt-3">
-                            <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowDate">DATE:</span>
-                                <span id="compDateDisplay2" class="font-bold text-zinc-200">--</span>
-                            </div>
-                            <div class="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                                <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowWeight">WEIGHT:</span>
-                                <span id="compWeight2" class="font-bold text-zinc-200">--</span>
-                            </div>
-                            <div class="flex justify-between items-center py-1">
-                                <span class="font-semibold text-zinc-400 tracking-wider text-xs" data-i18n="rowBodyFat">BODY FAT:</span>
-                                <span id="compBF2" class="font-bold text-zinc-200">--</span>
-                            </div>
-                        </div>
+        <!-- ================= TAB 3: HISTORY ================= -->
+        <div id="tabContent-history" class="space-y-8 hidden">
+            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold flex items-center space-x-2">
+                        <i class="fa-solid fa-history text-gymaccent"></i>
+                        <span data-i18n="historyTitle">Entry History</span>
+                    </h2>
+                    <div class="flex space-x-2">
+                        <button onclick="exportData()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnExport">Export JSON</button>
+                        <label class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
+                            <span data-i18n="btnImport">Import JSON</span>
+                            <input type="file" accept=".json" onchange="importData(event)" class="hidden">
+                        </label>
                     </div>
                 </div>
-            </div>
-            <div id="comparisonDiffSummary" class="text-center mt-6 text-sm font-medium text-zinc-300"></div>
-        </section>
-
-        <!-- Progress Analytics Chart -->
-        <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-            <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
-                <i class="fa-solid fa-chart-line text-gymaccent"></i>
-                <span data-i18n="chartTitle">Progress Analytics & Trends</span>
-            </h2>
-            <div class="h-80 w-full">
-                <canvas id="progressChart"></canvas>
-            </div>
-        </section>
-
-        <!-- Entry History -->
-        <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold flex items-center space-x-2">
-                    <i class="fa-solid fa-history text-gymaccent"></i>
-                    <span data-i18n="historyTitle">Entry History</span>
-                </h2>
-                <div class="flex space-x-2">
-                    <button onclick="exportData()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnExport">Export JSON</button>
-                    <label class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
-                        <span data-i18n="btnImport">Import JSON</span>
-                        <input type="file" accept=".json" onchange="importData(event)" class="hidden">
-                    </label>
-                </div>
-            </div>
-            <div id="historyList" class="space-y-4"></div>
-        </section>
+                <div id="historyList" class="space-y-4"></div>
+            </section>
+        </div>
     </main>
 
     <!-- Lightbox Modal -->
