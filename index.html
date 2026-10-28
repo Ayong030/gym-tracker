@@ -64,7 +64,7 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <!-- Stats Summary (Selalu tampil di atas) -->
+        <!-- Stats Summary -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentWeight">Current Weight</p>
@@ -111,12 +111,12 @@
                             </div>
                         </div>
 
-                        <!-- Photo Uploads -->
+                        <!-- Photo Uploads (Fixed IDs) -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
                                 <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelFrontPhoto">Front Pose</label>
-                                <input type="file" id="frontPhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'frontPreview')">
-                                <label for="frontPhoto" class="cursor-pointer block">
+                                <input type="file" id="frontPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'frontPreview')">
+                                <label for="frontPhotoInput" class="cursor-pointer block">
                                     <div id="frontPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
@@ -124,18 +124,18 @@
                             </div>
                             <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
                                 <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelSidePhoto">Side Chest Pose</label>
-                                <input type="file" id="sidePhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'sidePreview')">
-                                <label for="sidePhoto" class="cursor-pointer block">
-                                    <div id="sidePhoto" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                <input type="file" id="sidePhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'sidePreview')">
+                                <label for="sidePhotoInput" class="cursor-pointer block">
+                                    <div id="sidePreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
                                 </label>
                             </div>
                             <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
                                 <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
-                                <input type="file" id="backPhoto" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
-                                <label for="backPhoto" class="cursor-pointer block">
-                                    <div id="backPhoto" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                <input type="file" id="backPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
+                                <label for="backPhotoInput" class="cursor-pointer block">
+                                    <div id="backPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
                                 </label>
@@ -300,17 +300,18 @@
         <!-- ================= TAB 3: HISTORY ================= -->
         <div id="tabContent-history" class="space-y-8 hidden">
             <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h2 class="text-lg font-semibold flex items-center space-x-2">
                         <i class="fa-solid fa-history text-gymaccent"></i>
                         <span data-i18n="historyTitle">Entry History</span>
                     </h2>
-                    <div class="flex space-x-2">
+                    <div class="flex flex-wrap gap-2">
                         <button onclick="exportData()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnExport">Export JSON</button>
                         <label class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
                             <span data-i18n="btnImport">Import JSON</span>
                             <input type="file" accept=".json" onchange="importData(event)" class="hidden">
                         </label>
+                        <button onclick="clearAllHistory()" class="px-3 py-1.5 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 text-xs font-semibold rounded-lg transition" data-i18n="btnClearHistory">Kosongkan Riwayat</button>
                     </div>
                 </div>
                 <div id="historyList" class="space-y-4"></div>
