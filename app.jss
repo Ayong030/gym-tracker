@@ -27,11 +27,17 @@ const translations = {
         calcResult: "Hasil Estimasi:",
         btnCalculate: "Hitung",
         btnApplyBF: "Gunakan ke Form",
-        compTitle: "Perbandingan Foto Samping-Sampingan",
+        transJourneyTitle: "Transformation Journey",
+        transJourneySub: "Before & After",
+        boxBefore: "Before",
+        boxAfter: "After",
+        rowDate: "DATE:",
+        rowWeight: "WEIGHT:",
+        rowBodyFat: "BODY FAT:",
         compEntry1: "Entri 1 (Awal)",
         compEntry2: "Entri 2 (Terbaru)",
         compPose: "Pose Foto",
-        btnCompare: "Bandingkan",
+        btnCompare: "Bandingkan Foto",
         chartTitle: "Analitik Grafik & Tren Progres",
         historyTitle: "Riwayat Entri",
         btnExport: "Ekspor JSON",
@@ -66,7 +72,13 @@ const translations = {
         calcResult: "Result:",
         btnCalculate: "Calculate",
         btnApplyBF: "Use in Form",
-        compTitle: "Side-by-Side Photo Comparison",
+        transJourneyTitle: "Transformation Journey",
+        transJourneySub: "Before & After",
+        boxBefore: "Before",
+        boxAfter: "After",
+        rowDate: "DATE:",
+        rowWeight: "WEIGHT:",
+        rowBodyFat: "BODY FAT:",
         compEntry1: "Entry 1 (Baseline)",
         compEntry2: "Entry 2 (Recent)",
         compPose: "Pose",
@@ -355,15 +367,15 @@ function renderComparison() {
     document.getElementById('comparisonResultContainer').classList.remove('hidden');
     
     document.getElementById('compDateDisplay1').textContent = e1.date;
-    document.getElementById('compWeight1').textContent = e1.weight ?? '--';
-    document.getElementById('compBF1').textContent = e1.bodyFat ?? '--';
+    document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
+    document.getElementById('compBF1').textContent = e1.bodyFat !== null ? e1.bodyFat + '%' : '--';
     document.getElementById('compImageContainer1').innerHTML = e1[poseType] 
         ? `<img src="${e1[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e1[poseType]}')">`
         : `<span class="text-xs text-zinc-500">No photo</span>`;
 
     document.getElementById('compDateDisplay2').textContent = e2.date;
-    document.getElementById('compWeight2').textContent = e2.weight ?? '--';
-    document.getElementById('compBF2').textContent = e2.bodyFat ?? '--';
+    document.getElementById('compWeight2').textContent = e2.weight !== null ? e2.weight + ' kg' : '--';
+    document.getElementById('compBF2').textContent = e2.bodyFat !== null ? e2.bodyFat + '%' : '--';
     document.getElementById('compImageContainer2').innerHTML = e2[poseType] 
         ? `<img src="${e2[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e2[poseType]}')">`
         : `<span class="text-xs text-zinc-500">No photo</span>`;
