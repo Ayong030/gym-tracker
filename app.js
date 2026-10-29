@@ -41,7 +41,14 @@ const translations = {
         compEntry2: "Entri 2 (Terbaru)",
         compPose: "Pose Foto",
         btnCompare: "Bandingkan Foto",
+        btnExportImage: "Ekspor Foto Perbandingan",
         chartTitle: "Analitik Grafik & Tren Progres",
+        chartWeightTitle: "Grafik Berat Badan (kg)",
+        chartBfTitle: "Grafik Lemak Tubuh (%)",
+        filterAll: "Semua",
+        filterWeek: "Minggu",
+        filterMonth: "Bulan",
+        filterYear: "Tahun",
         historyTitle: "Riwayat Entri",
         btnExport: "Ekspor JSON",
         btnImport: "Impor JSON",
@@ -90,7 +97,14 @@ const translations = {
         compEntry2: "Entry 2 (Recent)",
         compPose: "Pose",
         btnCompare: "Compare Photos",
+        btnExportImage: "Export Comparison Image",
         chartTitle: "Progress Analytics & Trends",
+        chartWeightTitle: "Weight Chart (kg)",
+        chartBfTitle: "Body Fat Chart (%)",
+        filterAll: "All",
+        filterWeek: "Week",
+        filterMonth: "Month",
+        filterYear: "Year",
         historyTitle: "Entry History",
         btnExport: "Export JSON",
         btnImport: "Import JSON",
@@ -102,7 +116,9 @@ const translations = {
 let currentLang = 'id';
 let entries = [];
 let calculatedBFValue = null;
-let progressChartInstance = null;
+let weightChartInstance = null;
+let bodyFatChartInstance = null;
+let currentChartFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('entryDate');
@@ -199,7 +215,6 @@ function applyCalculatedBF() {
     }
 }
 
-// Kompresi foto otomatis untuk Front, Side, dan Back
 function previewImage(input, previewId) {
     const previewContainer = document.getElementById(previewId);
     if (input.files && input.files[0]) {
@@ -224,7 +239,6 @@ function previewImage(input, previewId) {
                 ctx.drawImage(img, 0, 0, width, height);
                 
                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
-
                 previewContainer.innerHTML = `<img src="${compressedDataUrl}" class="h-full w-full object-cover rounded-lg">`;
                 previewContainer.dataset.base64 = compressedDataUrl;
             }
@@ -264,7 +278,6 @@ function handleFormSubmit(event) {
         event.target.reset();
         document.getElementById('entryDate').valueAsDate = new Date();
         
-        // Reset preview containers and dataset
         ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -273,7 +286,6 @@ function handleFormSubmit(event) {
             }
         });
         
-        // Reset file inputs
         ['frontPhotoInput', 'sidePhotoInput', 'backPhotoInput'].forEach(id => {
             const inputEl = document.getElementById(id);
             if (inputEl) inputEl.value = '';
@@ -318,6 +330,8 @@ function clearAllHistory() {
         renderAll();
         const compContainer = document.getElementById('comparisonResultContainer');
         if (compContainer) compContainer.classList.add('hidden');
+        const exportBtn = document.getElementById('exportComparisonBtn');
+        if (exportBtn) exportBtn.classList.add('hidden');
         alert(currentLang === 'id' ? 'Riwayat berhasil dikosongkan.' : 'History cleared successfully.');
     }
 }
@@ -326,7 +340,7 @@ function renderAll() {
     renderStats();
     renderHistory();
     renderComparisonDropdowns();
-    renderChart();
+    renderCharts();
 }
 
 function renderStats() {
@@ -456,7 +470,9 @@ function renderComparison() {
     if (!e1 || !e2) return;
 
     const container = document.getElementById('comparisonResultContainer');
+    const exportBtn = document.getElementById('exportComparisonBtn');
     if (container) container.classList.remove('hidden');
+    if (exportBtn) exportBtn.classList.remove('hidden');
     
     document.getElementById('compDateDisplay1').textContent = e1.date;
     document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
@@ -483,35 +499,121 @@ function renderComparison() {
     }
 }
 
-function renderChart() {
-    const canvas = document.getElementById('progressChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const labels = entries.map(e => e.date);
-    const weights = entries.map(e => e.weight);
-    const bodyFats = entries.map(e => e.bodyFat);
+// Fungsi Ekspor Foto Perbandingan menjadi Gambar (PNG)
+function exportComparisonImage() {
+    const captureElement = document.getElementById('captureArea');
+    if (!captureElement) return;
 
-    if (progressChartInstance) { progressChartInstance.destroy(); }
+    html2canvas(captureElement, {
+        backgroundColor: '#121214',
+        scale: 2,
+        useCORS: true
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `transformation_journey_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        link.remove();
+    }).catch(err => {
+        console.error("Gagal mengekspor gambar:", err);
+        alert(currentLang === 'id' ? 'Gagal mengunduh gambar perbandingan.' : 'Failed to download comparison image.');
+    });
+}
 
-    progressChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Weight (kg)', data: weights, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', borderWidth: 2, tension: 0.3, yAxisID: 'y' },
-                { label: 'Body Fat (%)', data: bodyFats, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, tension: 0.3, yAxisID: 'y1' }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } },
-                y: { type: 'linear', display: true, position: 'left', grid: { color: '#27272a' }, ticks: { color: '#22c55e' } },
-                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#3b82f6' } }
+function setChartFilter(filter) {
+    currentChartFilter = filter;
+    ['all', 'week', 'month', 'year'].forEach(f => {
+        const btn = document.getElementById(`filterBtn-${f}`);
+        if (btn) {
+            if (f === filter) {
+                btn.className = "px-3 py-1.5 rounded-lg bg-gymaccent text-zinc-950 transition";
+            } else {
+                btn.className = "px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition";
             }
         }
     });
+    renderCharts();
+}
+
+function getFilteredEntries() {
+    if (currentChartFilter === 'all' || entries.length === 0) return entries;
+    const now = new Date();
+    let cutoff = new Date();
+
+    if (currentChartFilter === 'week') {
+        cutoff.setDate(now.getDate() - 7);
+    } else if (currentChartFilter === 'month') {
+        cutoff.setMonth(now.getMonth() - 1);
+    } else if (currentChartFilter === 'year') {
+        cutoff.setFullYear(now.getFullYear() - 1);
+    }
+
+    return entries.filter(e => new Date(e.date) >= cutoff);
+}
+
+function renderCharts() {
+    const filteredEntries = getFilteredEntries();
+    const labels = filteredEntries.map(e => e.date);
+    const weights = filteredEntries.map(e => e.weight);
+    const bodyFats = filteredEntries.map(e => e.bodyFat);
+
+    // 1. Render Grafik Berat Badan
+    const weightCanvas = document.getElementById('weightChart');
+    if (weightCanvas) {
+        if (weightChartInstance) weightChartInstance.destroy();
+        weightChartInstance = new Chart(weightCanvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Weight (kg)',
+                    data: weights,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } },
+                    y: { grid: { color: '#27272a' }, ticks: { color: '#22c55e' } }
+                }
+            }
+        });
+    }
+
+    // 2. Render Grafik Lemak Tubuh
+    const bfCanvas = document.getElementById('bodyFatChart');
+    if (bfCanvas) {
+        if (bodyFatChartInstance) bodyFatChartInstance.destroy();
+        bodyFatChartInstance = new Chart(bfCanvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Body Fat (%)',
+                    data: bodyFats,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } },
+                    y: { grid: { color: '#27272a' }, ticks: { color: '#3b82f6' } }
+                }
+            }
+        });
+    }
 }
 
 function exportData() {
