@@ -45,6 +45,7 @@ const translations = {
         historyTitle: "Riwayat Entri",
         btnExport: "Ekspor JSON",
         btnImport: "Impor JSON",
+        btnClearHistory: "Kosongkan Riwayat",
         footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda"
     },
     en: {
@@ -93,7 +94,8 @@ const translations = {
         historyTitle: "Entry History",
         btnExport: "Export JSON",
         btnImport: "Import JSON",
-        footerText: "Gym Progress & Built for fitness transformation"
+        btnClearHistory: "Clear History",
+        footerText: "Gym Progress & Body Tracker • Built for fitness transformation"
     }
 };
 
@@ -110,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAll();
 });
 
-// Fungsi Navigasi Tab
 function switchTab(tabName) {
     ['tracker', 'comparison', 'history'].forEach(t => {
         const content = document.getElementById(`tabContent-${t}`);
@@ -198,7 +199,7 @@ function applyCalculatedBF() {
     }
 }
 
-// Kompresi foto otomatis agar ukuran kecil dan muat di localStorage
+// Kompresi foto otomatis untuk Front, Side, dan Back
 function previewImage(input, previewId) {
     const previewContainer = document.getElementById(previewId);
     if (input.files && input.files[0]) {
@@ -262,6 +263,8 @@ function handleFormSubmit(event) {
         renderAll();
         event.target.reset();
         document.getElementById('entryDate').valueAsDate = new Date();
+        
+        // Reset preview containers and dataset
         ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -269,6 +272,13 @@ function handleFormSubmit(event) {
                 delete el.dataset.base64;
             }
         });
+        
+        // Reset file inputs
+        ['frontPhotoInput', 'sidePhotoInput', 'backPhotoInput'].forEach(id => {
+            const inputEl = document.getElementById(id);
+            if (inputEl) inputEl.value = '';
+        });
+
         calculatedBFValue = null;
         document.getElementById('calcResultDisplay').textContent = '-- %';
         alert(currentLang === 'id' ? 'Progres berhasil disimpan!' : 'Progress saved successfully!');
@@ -295,6 +305,20 @@ function loadFromLocalStorage() {
     } catch (e) {
         console.error("Gagal membaca localStorage:", e);
         entries = [];
+    }
+}
+
+function clearAllHistory() {
+    const msg = currentLang === 'id' 
+        ? 'Apakah Anda yakin ingin mengosongkan seluruh riwayat dan foto yang tersimpan?' 
+        : 'Are you sure you want to clear all history and saved photos?';
+    if (confirm(msg)) {
+        entries = [];
+        localStorage.removeItem('gym_tracker_entries');
+        renderAll();
+        const compContainer = document.getElementById('comparisonResultContainer');
+        if (compContainer) compContainer.classList.add('hidden');
+        alert(currentLang === 'id' ? 'Riwayat berhasil dikosongkan.' : 'History cleared successfully.');
     }
 }
 
