@@ -207,14 +207,13 @@
                 </section>
             </div>
 
-            <!-- Progress Analytics Charts (Filter & Separate Graphs) -->
+            <!-- Progress Analytics Charts -->
             <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h2 class="text-lg font-semibold flex items-center space-x-2">
                         <i class="fa-solid fa-chart-line text-gymaccent"></i>
                         <span data-i18n="chartTitle">Progress Analytics & Trends</span>
                     </h2>
-                    <!-- Filter Waktu Grafik -->
                     <div class="flex bg-zinc-900 p-1 rounded-xl border border-zinc-700 text-xs font-semibold">
                         <button onclick="setChartFilter('all')" id="filterBtn-all" class="px-3 py-1.5 rounded-lg bg-gymaccent text-zinc-950 transition" data-i18n="filterAll">Semua</button>
                         <button onclick="setChartFilter('week')" id="filterBtn-week" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition" data-i18n="filterWeek">Minggu</button>
@@ -224,7 +223,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Grafik Berat Badan -->
                     <div class="bg-zinc-900/60 border border-zinc-800 p-4 rounded-xl">
                         <h3 class="text-sm font-semibold mb-3 text-green-400 flex items-center space-x-2">
                             <i class="fa-solid fa-weight-scale"></i>
@@ -234,7 +232,6 @@
                             <canvas id="weightChart"></canvas>
                         </div>
                     </div>
-                    <!-- Grafik Lemak Tubuh -->
                     <div class="bg-zinc-900/60 border border-zinc-800 p-4 rounded-xl">
                         <h3 class="text-sm font-semibold mb-3 text-blue-400 flex items-center space-x-2">
                             <i class="fa-solid fa-percent"></i>
@@ -248,7 +245,7 @@
             </section>
         </div>
 
-        <!-- ================= TAB 2: BEFORE & AFTER COMPARISON ================= -->
+        <!-- ================= TAB 2: BEFORE & AFTER COMPARISON (LANDSCAPE) ================= -->
         <div id="tabContent-comparison" class="space-y-8 hidden">
             <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
                 <div class="text-center mb-6">
@@ -282,18 +279,19 @@
                     </button>
                 </div>
 
-                <!-- Area Kartu Perbandingan (Sesuai Templat Lampiran) -->
-                <div id="captureArea" class="bg-white p-8 rounded-xl max-w-4xl mx-auto shadow-2xl">
-                    <div class="text-center mb-8">
+                <!-- Area Tangkapan Lanskap (Width dilebarkan, tinggi foto disesuaikan landscape) -->
+                <div id="captureArea" class="bg-white p-8 rounded-xl max-w-5xl mx-auto shadow-2xl">
+                    <div class="text-center mb-6">
                         <h2 class="text-3xl font-extrabold tracking-wider text-slate-900 uppercase">TRANSFORMATION JOURNEY</h2>
                         <p class="text-xs font-semibold text-slate-500 tracking-widest uppercase mt-1">BEFORE & AFTER</p>
                     </div>
 
-                    <div id="comparisonResultContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8 hidden">
+                    <div id="comparisonResultContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
                         <!-- Kartu BEFORE -->
                         <div class="border-4 border-slate-800 bg-white p-4 flex flex-col justify-between">
-                            <div class="bg-slate-800 text-white text-center font-bold tracking-widest uppercase text-sm py-2 mb-4" data-i18n="boxBefore">BEFORE</div>
-                            <div id="compImageContainer1" class="h-80 bg-slate-100 flex items-center justify-center overflow-hidden mb-6 border border-slate-300"></div>
+                            <div class="bg-slate-800 text-white text-center font-bold tracking-widest uppercase text-sm py-2 mb-3" data-i18n="boxBefore">BEFORE</div>
+                            <!-- Tinggi kontainer gambar diubah menjadi aspek rasio lanskap/kotak optimal -->
+                            <div id="compImageContainer1" class="h-72 bg-slate-100 flex items-center justify-center overflow-hidden mb-4 border border-slate-300"></div>
                             <div class="space-y-1 text-sm text-slate-900">
                                 <div class="flex justify-between items-center py-1.5 px-3 bg-slate-50 border-b border-slate-200">
                                     <span class="font-extrabold text-xs tracking-wider" data-i18n="rowDate">DATE:</span>
@@ -312,8 +310,8 @@
 
                         <!-- Kartu AFTER -->
                         <div class="border-4 border-slate-800 bg-white p-4 flex flex-col justify-between">
-                            <div class="bg-slate-800 text-white text-center font-bold tracking-widest uppercase text-sm py-2 mb-4" data-i18n="boxAfter">AFTER</div>
-                            <div id="compImageContainer2" class="h-80 bg-slate-100 flex items-center justify-center overflow-hidden mb-6 border border-slate-300"></div>
+                            <div class="bg-slate-800 text-white text-center font-bold tracking-widest uppercase text-sm py-2 mb-3" data-i18n="boxAfter">AFTER</div>
+                            <div id="compImageContainer2" class="h-72 bg-slate-100 flex items-center justify-center overflow-hidden mb-4 border border-slate-300"></div>
                             <div class="space-y-1 text-sm text-slate-900">
                                 <div class="flex justify-between items-center py-1.5 px-3 bg-slate-50 border-b border-slate-200">
                                     <span class="font-extrabold text-xs tracking-wider" data-i18n="rowDate">DATE:</span>
