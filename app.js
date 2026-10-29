@@ -1,3 +1,28 @@
+// Konfigurasi Firebase (Opsional: Masukkan data project Firebase Anda jika ingin fitur Cloud Sync aktif)
+const firebaseConfig = {
+    apiKey: "MASUKKAN_API_KEY_ANDA",
+    authDomain: "MASUKKAN_AUTH_DOMAIN_ANDA",
+    projectId: "MASUKKAN_PROJECT_ID_ANDA",
+    storageBucket: "MASUKKAN_STORAGE_BUCKET_ANDA",
+    messagingSenderId: "MASUKKAN_MESSAGING_SENDER_ID_ANDA",
+    appId: "MASUKKAN_APP_ID_ANDA"
+};
+
+let isFirebaseInitialized = false;
+let auth, db;
+
+// Inisialisasi Firebase jika konfigurasi diisi
+if (firebaseConfig.apiKey !== "MASUKKAN_API_KEY_ANDA") {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        isFirebaseInitialized = true;
+    } catch (e) {
+        console.log("Firebase belum dikonfigurasi, berjalan dalam mode lokal murni.");
+    }
+}
+
 const translations = {
     id: {
         appTitle: "Gym Progress & Body Tracker",
@@ -117,12 +142,13 @@ const translations = {
         btnExport: "Export JSON",
         btnImport: "Import JSON",
         btnClearHistory: "Clear History",
-        footerText: "Gym Progress & Body Tracker • Built for fitness transformation"
+        footerText: "Gym Progress & Built for fitness transformation"
     }
 };
 
 let currentLang = 'id';
 let entries = [];
+let currentUser = null;
 let calculatedBFValue = null;
 let weightChartInstance = null;
 let bodyFatChartInstance = null;
@@ -131,11 +157,66 @@ let currentChartFilter = 'all';
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('entryDate');
     if (dateInput) dateInput.valueAsDate = new Date();
-    loadFromLocalStorage();
+    
+    if (isFirebaseInitialized) {
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            updateAuthUI();
+            loadData();
+        });
+    } else {
+        loadData();
+        updateAuthUI();
+    }
+    
     updateLanguageUI();
-    renderAll();
 });
 
+// Manajemen Tombol & Status Login Opsional
+function updateAuthUI() {
+    const statusText = document.getElementById('authStatusText');
+    const actionBtn = document.getElementById('authActionButton');
+    
+    if (!isFirebaseInitialized) {
+        statusText.textContent = "Mode Lokal (Offline)";
+        actionBtn.style.display = "none";
+        return;
+    }
+
+    if (currentUser) {
+        statusText.textContent = currentUser.displayName || currentUser.email;
+        actionBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket mr-1"></i> Logout`;
+        actionBtn.className = "bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded hover:bg-red-500/30 transition";
+    } else {
+        statusText.textContent = currentLang === 'id' ? "Mode Tamu (Lokal)" : "Guest Mode (Local)";
+        actionBtn.innerHTML = `<i class="fa-brands fa-google mr-1"></i> Login Google`;
+        actionBtn.className = "bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition";
+    }
+}
+
+function handleAuthAction() {
+    if (!isFirebaseInitialized) {
+        alert("Firebase belum dikonfigurasi.");
+        return;
+    }
+
+    if (currentUser) {
+        auth.signOut().then(() => {
+            currentUser = null;
+            loadData();
+            updateAuthUI();
+            alert(currentLang === 'id' ? 'Berhasil keluar. Kembali ke mode lokal.' : 'Logged out successfully.');
+        });
+    } else {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(error => {
+            console.error("Gagal login Google:", error);
+            alert("Gagal melakukan login Google: " + error.message);
+        });
+    }
+}
+
+// Navigasi Tab
 function switchTab(tabName) {
     ['tracker', 'comparison', 'history'].forEach(t => {
         const content = document.getElementById(`tabContent-${t}`);
@@ -155,6 +236,7 @@ function toggleLanguage() {
     const langLabel = document.getElementById('currentLangLabel');
     if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     updateLanguageUI();
+    updateAuthUI();
 }
 
 function updateLanguageUI() {
@@ -281,50 +363,84 @@ function handleFormSubmit(event) {
     entries.push(newEntry);
     entries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    if (saveToLocalStorage()) {
-        renderAll();
-        event.target.reset();
-        document.getElementById('entryDate').valueAsDate = new Date();
-        
-        ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.innerHTML = '<i class="fa-solid fa-camera text-xl"></i>';
-                delete el.dataset.base64;
+    saveData().then(success => {
+        if (success) {
+            renderAll();
+            event.target.reset();
+            document.getElementById('entryDate').valueAsDate = new Date();
+            
+            ['frontPreview', 'sidePreview', 'backPreview'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = '<i class="fa-solid fa-camera text-xl"></i>';
+                    delete el.dataset.base64;
+                }
+            });
+            
+            ['frontPhotoInput', 'sidePhotoInput', 'backPhotoInput'].forEach(id => {
+                const inputEl = document.getElementById(id);
+                if (inputEl) inputEl.value = '';
+            });
+
+            calculatedBFValue = null;
+            document.getElementById('calcResultDisplay').textContent = '-- %';
+            alert(currentLang === 'id' ? 'Progres berhasil disimpan!' : 'Progress saved successfully!');
+        }
+    });
+}
+
+// Penyimpanan Data Otomatis (Cloud jika Login, Lokal jika Tamu)
+function saveData() {
+    return new Promise((resolve) => {
+        if (currentUser && isFirebaseInitialized) {
+            db.collection("users").doc(currentUser.uid).set({
+                entries: entries
+            }).then(() => {
+                resolve(true);
+            }).catch(error => {
+                console.error("Gagal simpan ke Firestore:", error);
+                alert("Gagal menyimpan ke Cloud: " + error.message);
+                entries.pop();
+                resolve(false);
+            });
+        } else {
+            try {
+                localStorage.setItem('gym_tracker_entries', JSON.stringify(entries));
+                resolve(true);
+            } catch (e) {
+                alert(currentLang === 'id' 
+                    ? 'Penyimpanan penuh! Hapus beberapa foto/entri lama atau gunakan fitur Ekspor JSON.' 
+                    : 'Storage full! Delete old photos/entries or use Export JSON.');
+                entries.pop();
+                resolve(false);
             }
-        });
-        
-        ['frontPhotoInput', 'sidePhotoInput', 'backPhotoInput'].forEach(id => {
-            const inputEl = document.getElementById(id);
-            if (inputEl) inputEl.value = '';
-        });
-
-        calculatedBFValue = null;
-        document.getElementById('calcResultDisplay').textContent = '-- %';
-        alert(currentLang === 'id' ? 'Progres berhasil disimpan!' : 'Progress saved successfully!');
-    }
+        }
+    });
 }
 
-function saveToLocalStorage() {
-    try {
-        localStorage.setItem('gym_tracker_entries', JSON.stringify(entries));
-        return true;
-    } catch (e) {
-        alert(currentLang === 'id' 
-            ? 'Penyimpanan penuh! Hapus beberapa foto/entri lama atau gunakan fitur Ekspor JSON.' 
-            : 'Storage full! Delete old photos/entries or use Export JSON.');
-        entries.pop();
-        return false;
-    }
-}
-
-function loadFromLocalStorage() {
-    try {
-        const data = localStorage.getItem('gym_tracker_entries');
-        if (data) { entries = JSON.parse(data); }
-    } catch (e) {
-        console.error("Gagal membaca localStorage:", e);
-        entries = [];
+function loadData() {
+    if (currentUser && isFirebaseInitialized) {
+        db.collection("users").doc(currentUser.uid).get().then(doc => {
+            if (doc.exists && doc.data().entries) {
+                entries = doc.data().entries;
+            } else {
+                entries = [];
+            }
+            renderAll();
+        }).catch(error => {
+            console.error("Gagal memuat dari Firestore:", error);
+            entries = [];
+            renderAll();
+        });
+    } else {
+        try {
+            const data = localStorage.getItem('gym_tracker_entries');
+            if (data) { entries = JSON.parse(data); }
+            else { entries = []; }
+        } catch (e) {
+            entries = [];
+        }
+        renderAll();
     }
 }
 
@@ -334,13 +450,14 @@ function clearAllHistory() {
         : 'Are you sure you want to clear all history and saved photos?';
     if (confirm(msg)) {
         entries = [];
-        localStorage.removeItem('gym_tracker_entries');
-        renderAll();
-        const compContainer = document.getElementById('comparisonResultContainer');
-        if (compContainer) compContainer.classList.add('hidden');
-        const exportBtn = document.getElementById('exportComparisonBtn');
-        if (exportBtn) exportBtn.classList.add('hidden');
-        alert(currentLang === 'id' ? 'Riwayat berhasil dikosongkan.' : 'History cleared successfully.');
+        saveData().then(() => {
+            renderAll();
+            const compContainer = document.getElementById('comparisonResultContainer');
+            if (compContainer) compContainer.classList.add('hidden');
+            const exportBtn = document.getElementById('exportComparisonBtn');
+            if (exportBtn) exportBtn.classList.add('hidden');
+            alert(currentLang === 'id' ? 'Riwayat berhasil dikosongkan.' : 'History cleared successfully.');
+        });
     }
 }
 
@@ -425,8 +542,9 @@ function renderHistory() {
 function deleteEntry(id) {
     if (confirm(currentLang === 'id' ? 'Hapus entri ini?' : 'Delete this entry?')) {
         entries = entries.filter(e => e.id !== id);
-        saveToLocalStorage();
-        renderAll();
+        saveData().then(() => {
+            renderAll();
+        });
     }
 }
 
@@ -681,9 +799,10 @@ function importData(event) {
                 const imported = JSON.parse(e.target.result);
                 if (Array.isArray(imported)) {
                     entries = imported;
-                    saveToLocalStorage();
-                    renderAll();
-                    alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
+                    saveData().then(() => {
+                        renderAll();
+                        alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
+                    });
                 } else { alert('Format JSON tidak valid.'); }
             } catch (err) { alert('Gagal membaca file.'); }
         }
