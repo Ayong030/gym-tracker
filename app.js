@@ -46,9 +46,13 @@ const translations = {
         chartWeightTitle: "Grafik Berat Badan (kg)",
         chartBfTitle: "Grafik Lemak Tubuh (%)",
         filterAll: "Semua",
-        filterWeek: "Minggu",
-        filterMonth: "Bulan",
-        filterYear: "Tahun",
+        filterWeek: "7 Hari Terakhir",
+        filterMonth: "30 Hari Terakhir",
+        filterYear: "Tahun Ini",
+        filterCustom: "Kustom",
+        startDateLabel: "Mulai Tanggal",
+        endDateLabel: "Sampai Tanggal",
+        btnResetRange: "Reset",
         historyTitle: "Riwayat Entri",
         btnExport: "Ekspor JSON",
         btnImport: "Impor JSON",
@@ -102,9 +106,13 @@ const translations = {
         chartWeightTitle: "Weight Chart (kg)",
         chartBfTitle: "Body Fat Chart (%)",
         filterAll: "All",
-        filterWeek: "Week",
-        filterMonth: "Month",
-        filterYear: "Year",
+        filterWeek: "Last 7 Days",
+        filterMonth: "Last 30 Days",
+        filterYear: "This Year",
+        filterCustom: "Custom",
+        startDateLabel: "Start Date",
+        endDateLabel: "End Date",
+        btnResetRange: "Reset",
         historyTitle: "Entry History",
         btnExport: "Export JSON",
         btnImport: "Import JSON",
@@ -522,7 +530,15 @@ function exportComparisonImage() {
 
 function setChartFilter(filter) {
     currentChartFilter = filter;
-    ['all', 'week', 'month', 'year'].forEach(f => {
+    const customContainer = document.getElementById('customDateRangeContainer');
+    
+    if (filter === 'custom') {
+        if (customContainer) customContainer.classList.remove('hidden');
+    } else {
+        if (customContainer) customContainer.classList.add('hidden');
+    }
+
+    ['all', 'week', 'month', 'year', 'custom'].forEach(f => {
         const btn = document.getElementById(`filterBtn-${f}`);
         if (btn) {
             if (f === filter) {
@@ -535,20 +551,53 @@ function setChartFilter(filter) {
     renderCharts();
 }
 
-function getFilteredEntries() {
-    if (currentChartFilter === 'all' || entries.length === 0) return entries;
-    const now = new Date();
-    let cutoff = new Date();
+function applyCustomDateRange() {
+    if (currentChartFilter === 'custom') {
+        renderCharts();
+    }
+}
 
-    if (currentChartFilter === 'week') {
+function resetDateRange() {
+    document.getElementById('chartStartDate').value = '';
+    document.getElementById('chartEndDate').value = '';
+    renderCharts();
+}
+
+function getFilteredEntries() {
+    if (entries.length === 0) return entries;
+    const now = new Date();
+
+    if (currentChartFilter === 'all') {
+        return entries;
+    } else if (currentChartFilter === 'week') {
+        const cutoff = new Date();
         cutoff.setDate(now.getDate() - 7);
+        return entries.filter(e => new Date(e.date) >= cutoff);
     } else if (currentChartFilter === 'month') {
-        cutoff.setMonth(now.getMonth() - 1);
+        const cutoff = new Date();
+        cutoff.setDate(now.getDate() - 30);
+        return entries.filter(e => new Date(e.date) >= cutoff);
     } else if (currentChartFilter === 'year') {
-        cutoff.setFullYear(now.getFullYear() - 1);
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        return entries.filter(e => new Date(e.date) >= startOfYear);
+    } else if (currentChartFilter === 'custom') {
+        const startDateVal = document.getElementById('chartStartDate')?.value;
+        const endDateVal = document.getElementById('chartEndDate')?.value;
+
+        return entries.filter(e => {
+            const entryDate = new Date(e.date);
+            let valid = true;
+            if (startDateVal) {
+                valid = valid && (entryDate >= new Date(startDateVal));
+            }
+            if (endDateVal) {
+                valid = valid && (entryDate <= new Date(endDateVal));
+            }
+            return valid;
+        });
     }
 
-    return entries.filter(e => new Date(e.date) >= cutoff);
+    return entries;
 }
 
 function renderCharts() {
