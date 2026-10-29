@@ -1,11 +1,12 @@
 // Konfigurasi Firebase (Opsional: Masukkan data project Firebase Anda jika ingin fitur Cloud Sync aktif)
 const firebaseConfig = {
-    apiKey: "MASUKKAN_API_KEY_ANDA",
-    authDomain: "MASUKKAN_AUTH_DOMAIN_ANDA",
-    projectId: "MASUKKAN_PROJECT_ID_ANDA",
-    storageBucket: "MASUKKAN_STORAGE_BUCKET_ANDA",
-    messagingSenderId: "MASUKKAN_MESSAGING_SENDER_ID_ANDA",
-    appId: "MASUKKAN_APP_ID_ANDA"
+    apiKey: "AIzaSyCgYxUXNFO5a7tll8CX9OtdjNolAc0SU7k",
+    authDomain: "gym-progress-pic-ayong03.firebaseapp.com",
+    projectId: "gym-progress-pic-ayong03",
+    storageBucket: "gym-progress-pic-ayong03.firebasestorage.app",
+    messagingSenderId: "467250011295",
+    appId: "1:467250011295:web:74fbfc925843354583d6aa",
+    measurementId: "G-LFKLYZZ629"
 };
 
 let isFirebaseInitialized = false;
