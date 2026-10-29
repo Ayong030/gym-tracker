@@ -32,8 +32,8 @@ const translations = {
         btnApplyBF: "Gunakan ke Form",
         transJourneyTitle: "Transformation Journey",
         transJourneySub: "Before & After",
-        boxBefore: "Before",
-        boxAfter: "After",
+        boxBefore: "BEFORE",
+        boxAfter: "AFTER",
         rowDate: "DATE:",
         rowWeight: "WEIGHT:",
         rowBodyFat: "BODY FAT:",
@@ -88,8 +88,8 @@ const translations = {
         btnApplyBF: "Use in Form",
         transJourneyTitle: "Transformation Journey",
         transJourneySub: "Before & After",
-        boxBefore: "Before",
-        boxAfter: "After",
+        boxBefore: "BEFORE",
+        boxAfter: "AFTER",
         rowDate: "DATE:",
         rowWeight: "WEIGHT:",
         rowBodyFat: "BODY FAT:",
@@ -499,19 +499,19 @@ function renderComparison() {
     }
 }
 
-// Fungsi Ekspor Foto Perbandingan menjadi Gambar (PNG)
 function exportComparisonImage() {
     const captureElement = document.getElementById('captureArea');
     if (!captureElement) return;
 
     html2canvas(captureElement, {
-        backgroundColor: '#121214',
-        scale: 2,
-        useCORS: true
+        backgroundColor: '#ffffff',
+        scale: 3,
+        useCORS: true,
+        logging: false
     }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `transformation_journey_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.download = `Transformation_Journey_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
         link.remove();
     }).catch(err => {
@@ -557,7 +557,6 @@ function renderCharts() {
     const weights = filteredEntries.map(e => e.weight);
     const bodyFats = filteredEntries.map(e => e.bodyFat);
 
-    // 1. Render Grafik Berat Badan
     const weightCanvas = document.getElementById('weightChart');
     if (weightCanvas) {
         if (weightChartInstance) weightChartInstance.destroy();
@@ -586,7 +585,6 @@ function renderCharts() {
         });
     }
 
-    // 2. Render Grafik Lemak Tubuh
     const bfCanvas = document.getElementById('bodyFatChart');
     if (bfCanvas) {
         if (bodyFatChartInstance) bodyFatChartInstance.destroy();
