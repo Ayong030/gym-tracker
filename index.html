@@ -56,7 +56,13 @@
                 </div>
             </div>
             
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-3 flex-wrap gap-2">
+                <!-- Tombol Buka Pengaturan Target -->
+                <button onclick="openGoalModal()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5 text-gymaccent">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span data-i18n="btnSetGoal">Atur Target</span>
+                </button>
+
                 <!-- Status & Tombol Auth Opsional -->
                 <div id="authContainer" class="flex items-center space-x-2 bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-lg text-xs">
                     <span id="authStatusText" class="text-zinc-400">Mode Lokal (Tamu)</span>
@@ -101,11 +107,36 @@
             </div>
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalChange">Total Change</p>
-                <p id="statChange" class="text-2xl font-bold mt-1 text-zinc-400">0.0 <span class="text-sm font-normal text-zinc-400">kg</span></p>
+                <p id="statChange" class="text-2xl font-bold mt-1 text-zinc-400">0.00 <span class="text-sm font-normal text-zinc-400">kg</span></p>
             </div>
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalEntries">Total Entries</p>
                 <p id="statEntries" class="text-2xl font-bold mt-1 text-gymaccent">0</p>
+            </div>
+        </section>
+
+        <!-- Goal & Milestone Summary Card -->
+        <section class="bg-gymcard border border-gymborder p-5 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="space-y-1.5 flex-1">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-gymaccent/20 text-gymaccent px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider" id="goalTypeBadge">Fokus: --</span>
+                    <span class="text-xs text-zinc-400" id="goalTargetText">Target: Belum diatur</span>
+                </div>
+                <div class="flex justify-between text-xs font-semibold text-zinc-300 pt-1">
+                    <span id="goalProgressLabel">Pencapaian Target</span>
+                    <span id="goalPercentageVal">0%</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-zinc-900 rounded-full h-2.5 overflow-hidden border border-zinc-800">
+                    <div id="goalProgressBar" class="bg-gymaccent h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <!-- Milestone Badges Container -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0" id="badgeContainer">
+                <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
+                    <i class="fa-solid fa-trophy text-amber-400 text-sm mb-1"></i>
+                    <p class="text-[10px] text-zinc-400 font-semibold" data-i18n="badgeStarter">Starter</p>
+                </div>
             </div>
         </section>
 
@@ -389,6 +420,40 @@
             </section>
         </div>
     </main>
+
+    <!-- Modal Pengaturan Target -->
+    <div id="goalModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gymcard border border-gymborder max-w-md w-full p-6 rounded-2xl shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                <h3 class="text-base font-bold flex items-center space-x-2 text-gymaccent">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span data-i18n="modalGoalTitle">Pengaturan Target & Fokus</span>
+                </h3>
+                <button onclick="closeGoalModal()" class="text-zinc-400 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelGoalType">Fokus Latihan</label>
+                    <select id="modalGoalType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                        <option value="cutting" data-i18n="goalCutting">Cutting (Turun Lemak / Berat)</option>
+                        <option value="bulking" data-i18n="goalBulking">Bulking (Naik Massa Otot / Berat)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelTargetWeight">Target Berat Badan (kg)</label>
+                    <input type="number" step="0.01" id="modalTargetWeight" placeholder="e.g., 65.00" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelTargetBF">Target Lemak Tubuh (%) [Opsional]</label>
+                    <input type="number" step="0.01" id="modalTargetBF" placeholder="e.g., 14.00" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                </div>
+            </div>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="closeGoalModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold py-2.5 rounded-lg transition" data-i18n="btnCancel">Batal</button>
+                <button onclick="saveGoalSettings()" class="flex-1 bg-gymaccent text-zinc-950 font-bold text-xs py-2.5 rounded-lg hover:bg-green-400 transition" data-i18n="btnSaveGoal">Simpan Target</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Lightbox Modal -->
     <div id="lightboxModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
