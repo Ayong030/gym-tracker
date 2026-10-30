@@ -13,7 +13,7 @@ let isFirebaseInitialized = false;
 let auth, db;
 
 // Inisialisasi Firebase jika konfigurasi diisi
-if (firebaseConfig.apiKey !== "MASUKKAN_API_KEY_ANDA") {
+if (firebaseConfig.apiKey !== "AIzaSyCgYxUXNFO5a7tll8CX9OtdjNolAc0SU7k" ) {
     try {
         firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
