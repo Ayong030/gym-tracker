@@ -1,4 +1,4 @@
-// Konfigurasi Firebase (Opsional: Masukkan data project Firebase Anda jika ingin fitur Cloud Sync aktif)
+// Konfigurasi Firebase Asli
 const firebaseConfig = {
     apiKey: "AIzaSyCgYxUXNFO5a7tll8CX9OtdjNolAc0SU7k",
     authDomain: "gym-progress-pic-ayong03.firebaseapp.com",
@@ -12,16 +12,14 @@ const firebaseConfig = {
 let isFirebaseInitialized = false;
 let auth, db;
 
-// Inisialisasi Firebase jika konfigurasi diisi
-if (firebaseConfig.apiKey !== "MASUKAN_API_KEY_ANDA") {
-    try {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        isFirebaseInitialized = true;
-    } catch (e) {
-        console.log("Firebase belum dikonfigurasi, berjalan dalam mode lokal murni.");
-    }
+// Inisialisasi Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    isFirebaseInitialized = true;
+} catch (e) {
+    console.log("Firebase gagal diinisialisasi, berjalan dalam mode lokal murni.", e);
 }
 
 const translations = {
@@ -160,6 +158,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) dateInput.valueAsDate = new Date();
     
     if (isFirebaseInitialized) {
+        // Tangkap hasil redirect setelah pengguna kembali dari halaman login Google
+        auth.getRedirectResult().then(result => {
+            if (result.user) {
+                console.log("Berhasil login via Redirect:", result.user);
+            }
+        }).catch(error => {
+            console.error("Gagal mendapatkan hasil redirect:", error);
+        });
+
         auth.onAuthStateChanged(user => {
             currentUser = user;
             updateAuthUI();
@@ -210,10 +217,8 @@ function handleAuthAction() {
         });
     } else {
         const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).catch(error => {
-            console.error("Gagal login Google:", error);
-            alert("Gagal melakukan login Google: " + error.message);
-        });
+        // Menggunakan Redirect menggantikan Popup untuk menghindari terblokir browser HP
+        auth.signInWithRedirect(provider);
     }
 }
 
@@ -390,7 +395,6 @@ function handleFormSubmit(event) {
     });
 }
 
-// Penyimpanan Data Otomatis (Cloud jika Login, Lokal jika Tamu)
 function saveData() {
     return new Promise((resolve) => {
         if (currentUser && isFirebaseInitialized) {
