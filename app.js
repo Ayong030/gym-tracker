@@ -31,7 +31,7 @@ const translations = {
         tabHistory: "Riwayat Entri",
         statCurrentWeight: "Berat Terkini",
         statCurrentBodyFat: "% Lemak Terkini",
-        statTotalChange: "Total Perubahan",
+        statTotalChange: "Perubahan Terakhir",
         statTotalEntries: "Total Entri",
         formTitle: "Catat Progres Baru",
         labelDate: "Tanggal",
@@ -91,7 +91,7 @@ const translations = {
         tabHistory: "Entry History",
         statCurrentWeight: "Current Weight",
         statCurrentBodyFat: "Current Body Fat",
-        statTotalChange: "Total Change",
+        statTotalChange: "Latest Change",
         statTotalEntries: "Total Entries",
         formTitle: "Log New Progress",
         labelDate: "Date",
@@ -157,6 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('entryDate');
     if (dateInput) dateInput.valueAsDate = new Date();
     
+    // Set step 0.01 secara dinamis pada input berat dan lemak agar mendukung 2 digit di belakang koma
+    const weightInputEl = document.getElementById('entryWeight');
+    const bfInputEl = document.getElementById('entryBodyFat');
+    if (weightInputEl) weightInputEl.setAttribute('step', '0.01');
+    if (bfInputEl) bfInputEl.setAttribute('step', '0.01');
+
     if (isFirebaseInitialized) {
         auth.onAuthStateChanged(user => {
             currentUser = user;
@@ -208,7 +214,6 @@ function handleAuthAction() {
         });
     } else {
         const provider = new firebase.auth.GoogleAuthProvider();
-        // Menggunakan Popup kembali dengan penanganan error interaktif
         auth.signInWithPopup(provider).then((result) => {
             currentUser = result.user;
             updateAuthUI();
@@ -297,7 +302,7 @@ function calculateNavyBodyFat() {
         bf = 163.205 * Math.log10(waist + hip - neck) - 97.684 * Math.log10(height) - 78.387;
     }
 
-    calculatedBFValue = Math.max(1, Math.min(60, parseFloat(bf.toFixed(1))));
+    calculatedBFValue = Math.max(1, Math.min(60, parseFloat(bf.toFixed(2))));
     document.getElementById('calcResultDisplay').textContent = calculatedBFValue + ' %';
 }
 
@@ -365,6 +370,7 @@ function handleFormSubmit(event) {
     };
 
     entries.push(newEntry);
+    // Urutkan entries secara kronologis berdasarkan tanggal
     entries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     saveData().then(success => {
@@ -426,6 +432,7 @@ function loadData() {
         db.collection("users").doc(currentUser.uid).get().then(doc => {
             if (doc.exists && doc.data().entries) {
                 entries = doc.data().entries;
+                entries.sort((a, b) => new Date(a.date) - new Date(b.date));
             } else {
                 entries = [];
             }
@@ -438,7 +445,10 @@ function loadData() {
     } else {
         try {
             const data = localStorage.getItem('gym_tracker_entries');
-            if (data) { entries = JSON.parse(data); }
+            if (data) { 
+                entries = JSON.parse(data); 
+                entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+            }
             else { entries = []; }
         } catch (e) {
             entries = [];
@@ -483,16 +493,30 @@ function renderStats() {
 
     if (weighted.length > 0) {
         const curW = weighted[weighted.length - 1].weight;
-        const startW = weighted[0].weight;
-        const diff = (curW - startW).toFixed(1);
         if (statWeightEl) statWeightEl.innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
-        if (changeEl) {
-            changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diff} <span class="text-sm font-normal text-zinc-400">kg</span>`;
-            changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-400'}`;
+
+        // Perhitungan perubahan: Berat entri tanggal terbaru dibandingkan dengan entry dengan tanggal tepat sebelumnya
+        if (weighted.length > 1) {
+            const latestWeight = weighted[weighted.length - 1].weight;
+            const prevWeight = weighted[weighted.length - 2].weight;
+            const diff = (latestWeight - prevWeight).toFixed(2);
+
+            if (changeEl) {
+                changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diff} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+                changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-400'}`;
+            }
+        } else {
+            if (changeEl) {
+                changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-zinc-400">kg</span>`;
+                changeEl.className = "text-2xl font-bold mt-1 text-zinc-400";
+            }
         }
     } else {
         if (statWeightEl) statWeightEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">kg</span>`;
-        if (changeEl) changeEl.textContent = '0.0 kg';
+        if (changeEl) {
+            changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-zinc-400">kg</span>`;
+            changeEl.className = "text-2xl font-bold mt-1 text-zinc-400";
+        }
     }
 
     const statBodyFatEl = document.getElementById('statBodyFat');
@@ -619,7 +643,7 @@ function renderComparison() {
 
     const summaryEl = document.getElementById('comparisonDiffSummary');
     if (e1.weight !== null && e2.weight !== null) {
-        const diffW = (e2.weight - e1.weight).toFixed(1);
+        const diffW = (e2.weight - e1.weight).toFixed(2);
         if (summaryEl) {
             summaryEl.innerHTML = `Net Weight Difference: <strong class="${diffW <= 0 ? 'text-green-400' : 'text-amber-400'}">${diffW > 0 ? '+' : ''}${diffW} kg</strong>`;
         }
@@ -802,6 +826,7 @@ function importData(event) {
                 const imported = JSON.parse(e.target.result);
                 if (Array.isArray(imported)) {
                     entries = imported;
+                    entries.sort((a, b) => new Date(a.date) - new Date(b.date));
                     saveData().then(() => {
                         renderAll();
                         alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
