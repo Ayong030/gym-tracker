@@ -12,7 +12,6 @@ const firebaseConfig = {
 let isFirebaseInitialized = false;
 let auth, db;
 
-// Inisialisasi Firebase
 try {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
@@ -81,7 +80,19 @@ const translations = {
         btnExport: "Ekspor JSON",
         btnImport: "Impor JSON",
         btnClearHistory: "Kosongkan Riwayat",
-        footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda"
+        footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda",
+        btnSetGoal: "Atur Target",
+        modalGoalTitle: "Pengaturan Target & Fokus",
+        labelGoalType: "Fokus Latihan",
+        goalCutting: "Cutting (Turun Berat)",
+        goalBulking: "Bulking (Naik Berat)",
+        labelTargetWeight: "Target Berat Badan (kg)",
+        labelTargetBF: "Target Lemak Tubuh (%) [Opsional]",
+        btnCancel: "Batal",
+        btnSaveGoal: "Simpan Target",
+        badgeStarter: "Starter",
+        badgeConsistent: "Konsisten",
+        badgePro: "Transformator"
     },
     en: {
         appTitle: "Gym Progress & Body Tracker",
@@ -141,12 +152,29 @@ const translations = {
         btnExport: "Export JSON",
         btnImport: "Import JSON",
         btnClearHistory: "Clear History",
-        footerText: "Gym Progress & Built for fitness transformation"
+        footerText: "Gym Progress & Built for fitness transformation",
+        btnSetGoal: "Set Goal",
+        modalGoalTitle: "Goal & Focus Settings",
+        labelGoalType: "Training Focus",
+        goalCutting: "Cutting (Lose Weight)",
+        goalBulking: "Bulking (Gain Weight)",
+        labelTargetWeight: "Target Weight (kg)",
+        labelTargetBF: "Target Body Fat (%) [Optional]",
+        btnCancel: "Cancel",
+        btnSaveGoal: "Save Goal",
+        badgeStarter: "Starter",
+        badgeConsistent: "Consistent",
+        badgePro: "Transformer"
     }
 };
 
 let currentLang = 'id';
 let entries = [];
+let userGoal = {
+    type: 'cutting',
+    targetWeight: null,
+    targetBF: null
+};
 let currentUser = null;
 let calculatedBFValue = null;
 let weightChartInstance = null;
@@ -157,7 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('entryDate');
     if (dateInput) dateInput.valueAsDate = new Date();
     
-    // Set step 0.01 secara dinamis pada input berat dan lemak agar mendukung 2 digit di belakang koma
     const weightInputEl = document.getElementById('entryWeight');
     const bfInputEl = document.getElementById('entryBodyFat');
     if (weightInputEl) weightInputEl.setAttribute('step', '0.01');
@@ -225,6 +252,31 @@ function handleAuthAction() {
     }
 }
 
+// Modal Target Handler
+function openGoalModal() {
+    document.getElementById('modalGoalType').value = userGoal.type || 'cutting';
+    document.getElementById('modalTargetWeight').value = userGoal.targetWeight !== null ? userGoal.targetWeight : '';
+    document.getElementById('modalTargetBF').value = userGoal.targetBF !== null ? userGoal.targetBF : '';
+    document.getElementById('goalModal').classList.remove('hidden');
+}
+
+function closeGoalModal() {
+    document.getElementById('goalModal').classList.add('hidden');
+}
+
+function saveGoalSettings() {
+    const type = document.getElementById('modalGoalType').value;
+    const targetWeight = parseFloat(document.getElementById('modalTargetWeight').value) || null;
+    const targetBF = parseFloat(document.getElementById('modalTargetBF').value) || null;
+
+    userGoal = { type, targetWeight, targetBF };
+    saveData().then(() => {
+        closeGoalModal();
+        renderGoalAndBadges();
+        alert(currentLang === 'id' ? 'Target berhasil disimpan!' : 'Goal saved successfully!');
+    });
+}
+
 // Navigasi Tab
 function switchTab(tabName) {
     ['tracker', 'comparison', 'history'].forEach(t => {
@@ -246,6 +298,7 @@ function toggleLanguage() {
     if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     updateLanguageUI();
     updateAuthUI();
+    renderGoalAndBadges();
 }
 
 function updateLanguageUI() {
@@ -370,7 +423,6 @@ function handleFormSubmit(event) {
     };
 
     entries.push(newEntry);
-    // Urutkan entries secara kronologis berdasarkan tanggal
     entries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     saveData().then(success => {
@@ -401,10 +453,9 @@ function handleFormSubmit(event) {
 
 function saveData() {
     return new Promise((resolve) => {
+        const payload = { entries, userGoal };
         if (currentUser && isFirebaseInitialized) {
-            db.collection("users").doc(currentUser.uid).set({
-                entries: entries
-            }).then(() => {
+            db.collection("users").doc(currentUser.uid).set(payload).then(() => {
                 resolve(true);
             }).catch(error => {
                 console.error("Gagal simpan ke Firestore:", error);
@@ -414,7 +465,7 @@ function saveData() {
             });
         } else {
             try {
-                localStorage.setItem('gym_tracker_entries', JSON.stringify(entries));
+                localStorage.setItem('gym_tracker_data', JSON.stringify(payload));
                 resolve(true);
             } catch (e) {
                 alert(currentLang === 'id' 
@@ -430,8 +481,10 @@ function saveData() {
 function loadData() {
     if (currentUser && isFirebaseInitialized) {
         db.collection("users").doc(currentUser.uid).get().then(doc => {
-            if (doc.exists && doc.data().entries) {
-                entries = doc.data().entries;
+            if (doc.exists) {
+                const data = doc.data();
+                entries = data.entries || [];
+                userGoal = data.userGoal || { type: 'cutting', targetWeight: null, targetBF: null };
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
             } else {
                 entries = [];
@@ -444,12 +497,17 @@ function loadData() {
         });
     } else {
         try {
-            const data = localStorage.getItem('gym_tracker_entries');
-            if (data) { 
-                entries = JSON.parse(data); 
+            const raw = localStorage.getItem('gym_tracker_data') || localStorage.getItem('gym_tracker_entries');
+            if (raw) { 
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    entries = parsed;
+                } else {
+                    entries = parsed.entries || [];
+                    userGoal = parsed.userGoal || { type: 'cutting', targetWeight: null, targetBF: null };
+                }
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
-            }
-            else { entries = []; }
+            } else { entries = []; }
         } catch (e) {
             entries = [];
         }
@@ -476,6 +534,7 @@ function clearAllHistory() {
 
 function renderAll() {
     renderStats();
+    renderGoalAndBadges();
     renderHistory();
     renderComparisonDropdowns();
     renderCharts();
@@ -495,7 +554,6 @@ function renderStats() {
         const curW = weighted[weighted.length - 1].weight;
         if (statWeightEl) statWeightEl.innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
 
-        // Perhitungan perubahan: Berat entri tanggal terbaru dibandingkan dengan entry dengan tanggal tepat sebelumnya
         if (weighted.length > 1) {
             const latestWeight = weighted[weighted.length - 1].weight;
             const prevWeight = weighted[weighted.length - 2].weight;
@@ -524,6 +582,81 @@ function renderStats() {
         if (statBodyFatEl) statBodyFatEl.innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-zinc-400">%</span>`;
     } else {
         if (statBodyFatEl) statBodyFatEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">%</span>`;
+    }
+}
+
+function renderGoalAndBadges() {
+    const badgeBadgeEl = document.getElementById('goalTypeBadge');
+    const targetTextEl = document.getElementById('goalTargetText');
+    const progressLabelEl = document.getElementById('goalProgressLabel');
+    const percentageValEl = document.getElementById('goalPercentageVal');
+    const progressBarEl = document.getElementById('goalProgressBar');
+    const badgeContainerEl = document.getElementById('badgeContainer');
+
+    if (badgeBadgeEl) {
+        const typeText = userGoal.type === 'bulking' 
+            ? (currentLang === 'id' ? 'Fokus: Bulking' : 'Focus: Bulking') 
+            : (currentLang === 'id' ? 'Fokus: Cutting' : 'Focus: Cutting');
+        badgeBadgeEl.textContent = typeText;
+    }
+
+    const weighted = entries.filter(e => e.weight !== null);
+    const currentWeight = weighted.length > 0 ? weighted[weighted.length - 1].weight : null;
+
+    if (targetTextEl) {
+        if (userGoal.targetWeight !== null) {
+            targetTextEl.textContent = `Target: ${userGoal.targetWeight} kg${userGoal.targetBF !== null ? ' (' + userGoal.targetBF + '%)' : ''}`;
+        } else {
+            targetTextEl.textContent = currentLang === 'id' ? 'Target: Belum diatur' : 'Target: Not set';
+        }
+    }
+
+    let progressPercent = 0;
+    if (currentWeight !== null && userGoal.targetWeight !== null && weighted.length > 1) {
+        const startWeight = weighted[0].weight;
+        const totalDistance = Math.abs(userGoal.targetWeight - startWeight);
+        const currentDistance = Math.abs(userGoal.targetWeight - currentWeight);
+        
+        if (totalDistance === 0) {
+            progressPercent = 100;
+        } else {
+            progressPercent = Math.max(0, Math.min(100, ((totalDistance - currentDistance) / totalDistance) * 100));
+        }
+    } else if (currentWeight !== null && userGoal.targetWeight !== null && weighted.length === 1) {
+        progressPercent = currentWeight === userGoal.targetWeight ? 100 : 0;
+    }
+
+    if (percentageValEl) percentageValEl.textContent = `${progressPercent.toFixed(0)}%`;
+    if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
+
+    // Render Badges
+    if (badgeContainerEl) {
+        let badgesHtml = `
+            <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
+                <i class="fa-solid fa-trophy text-amber-400 text-sm mb-1"></i>
+                <p class="text-[10px] text-zinc-400 font-semibold" data-i18n="badgeStarter">Starter</p>
+            </div>
+        `;
+
+        if (entries.length >= 5) {
+            badgesHtml += `
+                <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
+                    <i class="fa-solid fa-fire text-orange-400 text-sm mb-1"></i>
+                    <p class="text-[10px] text-zinc-400 font-semibold" data-i18n="badgeConsistent">Konsisten</p>
+                </div>
+            `;
+        }
+
+        if (progressPercent >= 100) {
+            badgesHtml += `
+                <div class="bg-zinc-900 border border-gymaccent/50 px-3 py-2 rounded-xl text-center bg-gymaccent/10">
+                    <i class="fa-solid fa-medal text-gymaccent text-sm mb-1"></i>
+                    <p class="text-[10px] text-gymaccent font-bold" data-i18n="badgePro">Transformator</p>
+                </div>
+            `;
+        }
+
+        badgeContainerEl.innerHTML = badgesHtml;
     }
 }
 
@@ -625,7 +758,7 @@ function renderComparison() {
     const container = document.getElementById('comparisonResultContainer');
     const exportBtn = document.getElementById('exportComparisonBtn');
     if (container) container.classList.remove('hidden');
-    if (exportBtn) exportBtn.classList.remove('hidden');
+    if (exportBtn) exportBtn.classList.add('hidden');
     
     document.getElementById('compDateDisplay1').textContent = e1.date;
     document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
@@ -809,7 +942,8 @@ function renderCharts() {
 }
 
 function exportData() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
+    const payload = { entries, userGoal };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
     const anchor = document.createElement('a');
     anchor.href = dataStr;
     anchor.download = `gym_progress_backup_${new Date().toISOString().split('T')[0]}.json`;
@@ -826,12 +960,18 @@ function importData(event) {
                 const imported = JSON.parse(e.target.result);
                 if (Array.isArray(imported)) {
                     entries = imported;
-                    entries.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    saveData().then(() => {
-                        renderAll();
-                        alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
-                    });
-                } else { alert('Format JSON tidak valid.'); }
+                } else if (imported.entries) {
+                    entries = imported.entries;
+                    if (imported.userGoal) userGoal = imported.userGoal;
+                } else {
+                    alert('Format JSON tidak valid.');
+                    return;
+                }
+                entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+                saveData().then(() => {
+                    renderAll();
+                    alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
+                });
             } catch (err) { alert('Gagal membaca file.'); }
         }
     }
