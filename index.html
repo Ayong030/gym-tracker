@@ -102,8 +102,8 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <!-- Stats Summary -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Stats Summary (Ditambah Kotak BMI) -->
+        <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentWeight">Current Weight</p>
                 <p id="statWeight" class="text-2xl font-bold mt-1 text-zinc-100">-- <span class="text-sm font-normal text-zinc-400">kg</span></p>
@@ -111,6 +111,10 @@
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentBodyFat">Current Body Fat</p>
                 <p id="statBodyFat" class="text-2xl font-bold mt-1 text-zinc-100">-- <span class="text-sm font-normal text-zinc-400">%</span></p>
+            </div>
+            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
+                <p class="text-xs text-zinc-400 uppercase tracking-wider">BMI Terkini</p>
+                <p id="statBmi" class="text-xl font-bold mt-1 text-zinc-100">-- <span id="statBmiCategory" class="text-xs font-normal text-zinc-400"></span></p>
             </div>
             <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
                 <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalChange">Total Change</p>
@@ -428,17 +432,28 @@
         </div>
     </main>
 
-    <!-- Modal Pengaturan Target -->
+    <!-- Modal Pengaturan Target & Profil -->
     <div id="goalModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-gymcard border border-gymborder max-w-md w-full p-6 rounded-2xl shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
                 <h3 class="text-base font-bold flex items-center space-x-2 text-gymaccent">
                     <i class="fa-solid fa-bullseye"></i>
-                    <span data-i18n="modalGoalTitle">Pengaturan Target & Fokus</span>
+                    <span data-i18n="modalGoalTitle">Pengaturan Target & Profil</span>
                 </h3>
                 <button onclick="closeGoalModal()" class="text-zinc-400 hover:text-white text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Jenis Kelamin</label>
+                    <select id="modalGender" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                        <option value="male">Pria</option>
+                        <option value="female">Wanita</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Tinggi Badan (cm)</label>
+                    <input type="number" step="0.1" id="modalHeight" placeholder="e.g., 169" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelGoalType">Fokus Latihan</label>
                     <select id="modalGoalType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
