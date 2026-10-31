@@ -82,7 +82,7 @@ const translations = {
         btnClearHistory: "Kosongkan Riwayat",
         footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda",
         btnSetGoal: "Atur Target",
-        modalGoalTitle: "Pengaturan Target & Fokus",
+        modalGoalTitle: "Pengaturan Target & Profil",
         labelGoalType: "Fokus Latihan",
         goalCutting: "Cutting (Turun Berat)",
         goalBulking: "Bulking (Naik Berat)",
@@ -171,6 +171,8 @@ const translations = {
 let currentLang = 'id';
 let entries = [];
 let userGoal = {
+    gender: 'male',
+    height: null,
     type: 'cutting',
     targetWeight: null,
     targetBF: null
@@ -252,6 +254,8 @@ function handleAuthAction() {
 }
 
 function openGoalModal() {
+    document.getElementById('modalGender').value = userGoal.gender || 'male';
+    document.getElementById('modalHeight').value = userGoal.height !== null ? userGoal.height : '';
     document.getElementById('modalGoalType').value = userGoal.type || 'cutting';
     document.getElementById('modalTargetWeight').value = userGoal.targetWeight !== null ? userGoal.targetWeight : '';
     document.getElementById('modalTargetBF').value = userGoal.targetBF !== null ? userGoal.targetBF : '';
@@ -263,15 +267,18 @@ function closeGoalModal() {
 }
 
 function saveGoalSettings() {
+    const gender = document.getElementById('modalGender').value;
+    const height = parseFloat(document.getElementById('modalHeight').value) || null;
     const type = document.getElementById('modalGoalType').value;
     const targetWeight = parseFloat(document.getElementById('modalTargetWeight').value) || null;
     const targetBF = parseFloat(document.getElementById('modalTargetBF').value) || null;
 
-    userGoal = { type, targetWeight, targetBF };
+    userGoal = { gender, height, type, targetWeight, targetBF };
     saveData().then(() => {
         closeGoalModal();
         renderGoalAndBadges();
-        alert(currentLang === 'id' ? 'Target berhasil disimpan!' : 'Goal saved successfully!');
+        renderStats();
+        alert(currentLang === 'id' ? 'Pengaturan profil & target berhasil disimpan!' : 'Goal saved successfully!');
     });
 }
 
@@ -481,7 +488,7 @@ function loadData() {
             if (doc.exists) {
                 const data = doc.data();
                 entries = data.entries || [];
-                userGoal = data.userGoal || { type: 'cutting', targetWeight: null, targetBF: null };
+                userGoal = data.userGoal || { gender: 'male', height: null, type: 'cutting', targetWeight: null, targetBF: null };
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
             } else {
                 entries = [];
@@ -501,7 +508,7 @@ function loadData() {
                     entries = parsed;
                 } else {
                     entries = parsed.entries || [];
-                    userGoal = parsed.userGoal || { type: 'cutting', targetWeight: null, targetBF: null };
+                    userGoal = parsed.userGoal || { gender: 'male', height: null, type: 'cutting', targetWeight: null, targetBF: null };
                 }
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
             } else { entries = []; }
@@ -546,10 +553,37 @@ function renderStats() {
 
     const statWeightEl = document.getElementById('statWeight');
     const changeEl = document.getElementById('statChange');
+    const statBmiEl = document.getElementById('statBmi');
 
     if (weighted.length > 0) {
         const curW = weighted[weighted.length - 1].weight;
         if (statWeightEl) statWeightEl.innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+
+        // Kalkulasi BMI
+        if (userGoal.height && userGoal.height > 0) {
+            const heightM = userGoal.height / 100;
+            const bmiValue = curW / (heightM * heightM);
+            let catText = '';
+            let catColor = 'text-zinc-400';
+
+            if (bmiValue < 18.5) {
+                catText = '(Kurus)';
+                catColor = 'text-blue-400';
+            } else if (bmiValue >= 18.5 && bmiValue < 25) {
+                catText = '(Ideal)';
+                catColor = 'text-green-400';
+            } else if (bmiValue >= 25 && bmiValue < 30) {
+                catText = '(Gemuk)';
+                catColor = 'text-amber-400';
+            } else {
+                catText = '(Obesitas)';
+                catColor = 'text-red-400';
+            }
+
+            if (statBmiEl) statBmi.innerHTML = `${bmiValue.toFixed(1)} <span class="text-xs font-normal ${catColor}" id="statBmiCategory">${catText}</span>`;
+        } else {
+            if (statBmiEl) statBmi.innerHTML = `-- <span class="text-xs font-normal text-zinc-400">(Atur Tinggi)</span>`;
+        }
 
         if (weighted.length > 1) {
             const latestWeight = weighted[weighted.length - 1].weight;
@@ -568,6 +602,7 @@ function renderStats() {
         }
     } else {
         if (statWeightEl) statWeightEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        if (statBmiEl) statBmi.innerHTML = `--`;
         if (changeEl) {
             changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-zinc-400">kg</span>`;
             changeEl.className = "text-2xl font-bold mt-1 text-zinc-400";
