@@ -106,8 +106,8 @@ const translations = {
         statTotalEntries: "Total Entries",
         formTitle: "Log New Progress",
         labelDate: "Date",
-        labelWeight: "Weight (kg) (Optional)",
-        labelBodyFat: "Body Fat % (Optional)",
+        labelWeight: "Weight (kg)",
+        labelBodyFat: "Body Fat %",
         labelFrontPhoto: "Front Pose",
         labelSidePhoto: "Side Chest Pose",
         labelBackPhoto: "Back Pose",
@@ -204,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLanguageUI();
 });
 
-// Manajemen Tombol & Status Login Opsional
 function updateAuthUI() {
     const statusText = document.getElementById('authStatusText');
     const actionBtn = document.getElementById('authActionButton');
@@ -252,7 +251,6 @@ function handleAuthAction() {
     }
 }
 
-// Modal Target Handler
 function openGoalModal() {
     document.getElementById('modalGoalType').value = userGoal.type || 'cutting';
     document.getElementById('modalTargetWeight').value = userGoal.targetWeight !== null ? userGoal.targetWeight : '';
@@ -277,7 +275,6 @@ function saveGoalSettings() {
     });
 }
 
-// Navigasi Tab
 function switchTab(tabName) {
     ['tracker', 'comparison', 'history'].forEach(t => {
         const content = document.getElementById(`tabContent-${t}`);
@@ -588,7 +585,6 @@ function renderStats() {
 function renderGoalAndBadges() {
     const badgeBadgeEl = document.getElementById('goalTypeBadge');
     const targetTextEl = document.getElementById('goalTargetText');
-    const progressLabelEl = document.getElementById('goalProgressLabel');
     const percentageValEl = document.getElementById('goalPercentageVal');
     const progressBarEl = document.getElementById('goalProgressBar');
     const badgeContainerEl = document.getElementById('badgeContainer');
@@ -629,7 +625,6 @@ function renderGoalAndBadges() {
     if (percentageValEl) percentageValEl.textContent = `${progressPercent.toFixed(0)}%`;
     if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
 
-    // Render Badges
     if (badgeContainerEl) {
         let badgesHtml = `
             <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
@@ -758,7 +753,7 @@ function renderComparison() {
     const container = document.getElementById('comparisonResultContainer');
     const exportBtn = document.getElementById('exportComparisonBtn');
     if (container) container.classList.remove('hidden');
-    if (exportBtn) exportBtn.classList.add('hidden');
+    if (exportBtn) exportBtn.classList.remove('hidden');
     
     document.getElementById('compDateDisplay1').textContent = e1.date;
     document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
