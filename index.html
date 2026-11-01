@@ -46,7 +46,7 @@
     <script>
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script defer src="/_vercel/speed-insights/speed-insights.js"></script>
 </head>
 <body class="bg-slate-100 dark:bg-gymdark text-slate-800 dark:text-zinc-100 min-h-screen font-sans antialiased pb-16 transition-colors duration-300">
     <!-- Header / Navbar -->
@@ -63,12 +63,12 @@
             </div>
             
             <div class="flex items-center space-x-3 flex-wrap gap-2">
-                <!-- Status & Tombol Auth Opsional -->
+                <!-- Status & Tombol Auth (Tombol di kiri, Username di kanan) -->
                 <div id="authContainer" class="flex items-center space-x-2 bg-slate-100 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs">
-                    <span id="authStatusText" class="text-slate-600 dark:text-zinc-400">Mode Lokal (Tamu)</span>
                     <button id="authActionButton" onclick="handleAuthAction()" class="bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition">
                         <i class="fa-brands fa-google mr-1"></i> Login Google
                     </button>
+                    <span id="authStatusText" class="text-slate-600 dark:text-zinc-400 font-medium">Athlete</span>
                 </div>
 
                 <button id="langToggleBtn" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold transition">
@@ -123,7 +123,7 @@
             </div>
         </section>
 
-        <!-- Goal & Milestone Summary Card (Dengan Progress Bar Aktif) -->
+        <!-- Goal & Milestone Summary Card -->
         <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-5 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div class="space-y-1.5 flex-1 w-full">
                 <div class="flex items-center space-x-2">
