@@ -28,12 +28,15 @@ const translations = {
         tabTracker: "Input & Grafik",
         tabComparison: "Before & After",
         tabHistory: "Riwayat Entri",
+        tabSettings: "Pengaturan",
         statCurrentWeight: "Berat Terkini",
         statCurrentBodyFat: "% Lemak Terkini",
+        statCurrentBmi: "BMI Terkini",
         statTotalChange: "Perubahan Terakhir",
         statTotalEntries: "Total Entri",
         formTitle: "Catat Progres Baru",
         labelDate: "Tanggal",
+        labelBodyFat: "% Lemak Tubuh",
         labelFrontPhoto: "Foto Depan",
         labelSidePhoto: "Foto Samping Dada",
         labelBackPhoto: "Foto Belakang",
@@ -44,6 +47,7 @@ const translations = {
         calcGender: "Jenis Kelamin",
         genderMale: "Pria",
         genderFemale: "Wanita",
+        calcWaist: "Perut / Pinggang (cm)",
         calcResult: "Hasil Estimasi:",
         btnCalculate: "Hitung",
         btnApplyBF: "Gunakan ke Form",
@@ -75,6 +79,20 @@ const translations = {
         footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda",
         goalCutting: "Cutting (Turun Berat)",
         goalBulking: "Bulking (Naik Berat)",
+        goalProgressLabel: "Pencapaian Target",
+        badgeStarter: "Starter",
+        badgeConsistent: "Konsisten",
+        badgePro: "Transformator",
+        settingsHeaderTitle: "Pengaturan Aplikasi & Profil",
+        settingsHeaderSub: "Sesuaikan profil, unit pengukuran, dan tema tampilan sesuai preferensi Anda.",
+        settingsUsernameLabel: "Username / Nama Panggilan",
+        settingsGenderLabel: "Jenis Kelamin",
+        settingsWeightUnitLabel: "Satuan Berat",
+        settingsHeightUnitLabel: "Satuan Tinggi",
+        settingsThemeLabel: "Tema Tampilan",
+        themeDark: "Dark Mode (Gelap)",
+        themeBright: "Bright Mode (Terang)",
+        btnSaveSettings: "Simpan Semua Pengaturan"
     },
     en: {
         appTitle: "Gym Progress & Body Tracker",
@@ -82,12 +100,15 @@ const translations = {
         tabTracker: "Input & Chart",
         tabComparison: "Before & After",
         tabHistory: "Entry History",
+        tabSettings: "Settings",
         statCurrentWeight: "Current Weight",
         statCurrentBodyFat: "Current Body Fat",
+        statCurrentBmi: "Current BMI",
         statTotalChange: "Latest Change",
         statTotalEntries: "Total Entries",
         formTitle: "Log New Progress",
         labelDate: "Date",
+        labelBodyFat: "Body Fat %",
         labelFrontPhoto: "Front Pose",
         labelSidePhoto: "Side Chest Pose",
         labelBackPhoto: "Back Pose",
@@ -98,6 +119,7 @@ const translations = {
         calcGender: "Gender",
         genderMale: "Male",
         genderFemale: "Female",
+        calcWaist: "Abdomen/Waist (cm)",
         calcResult: "Result:",
         btnCalculate: "Calculate",
         btnApplyBF: "Use in Form",
@@ -129,6 +151,20 @@ const translations = {
         footerText: "Gym Progress & Built for fitness transformation",
         goalCutting: "Cutting (Lose Weight)",
         goalBulking: "Bulking (Gain Weight)",
+        goalProgressLabel: "Target Progress",
+        badgeStarter: "Starter",
+        badgeConsistent: "Consistent",
+        badgePro: "Transformer",
+        settingsHeaderTitle: "App Settings & Profile",
+        settingsHeaderSub: "Customize your profile, measurement units, and appearance theme.",
+        settingsUsernameLabel: "Username / Nickname",
+        settingsGenderLabel: "Gender",
+        settingsWeightUnitLabel: "Weight Unit",
+        settingsHeightUnitLabel: "Height Unit",
+        settingsThemeLabel: "Appearance Theme",
+        themeDark: "Dark Mode",
+        themeBright: "Bright Mode",
+        btnSaveSettings: "Save All Settings"
     }
 };
 
@@ -137,7 +173,7 @@ let entries = [];
 let userSettings = {
     username: 'Athlete',
     gender: 'male',
-    height: 169, // selalu disimpan dalam cm (metric base)
+    height: 169, // disimpan dalam basis cm
     weightUnit: 'kg', // 'kg' atau 'lbs'
     heightUnit: 'cm', // 'cm' atau 'in'
     theme: 'dark', // 'dark' atau 'bright'
@@ -221,7 +257,6 @@ function handleAuthAction() {
     }
 }
 
-// SIMPAN PENGATURAN DARI HALAMAN SETTINGS
 function saveAppSettings() {
     const username = document.getElementById('settingUsername').value.trim() || 'Athlete';
     const gender = document.getElementById('settingGender').value;
@@ -232,12 +267,11 @@ function saveAppSettings() {
     const weightUnit = document.getElementById('settingWeightUnit').value;
     const theme = document.getElementById('settingTheme').value;
 
-    // Konversi ke basis metrik (cm dan kg) jika user memasukkan lbs atau inci
     if (rawHeight !== null && heightUnit === 'in') {
-        rawHeight = rawHeight * 2.54; // inch ke cm
+        rawHeight = rawHeight * 2.54;
     }
     if (rawTargetW !== null && weightUnit === 'lbs') {
-        rawTargetW = rawTargetW / 2.20462; // lbs ke kg
+        rawTargetW = rawTargetW / 2.20462;
     }
 
     userSettings = {
@@ -263,14 +297,13 @@ function loadSettingsToForm() {
     document.getElementById('settingUsername').value = userSettings.username || '';
     document.getElementById('settingGender').value = userSettings.gender || 'male';
     
-    // Tampilkan sesuai unit pilihan user
     let displayHeight = userSettings.height;
     if (displayHeight !== null && userSettings.heightUnit === 'in') {
         displayHeight = (displayHeight / 2.54).toFixed(1);
     }
     document.getElementById('settingHeight').value = displayHeight !== null ? displayHeight : '';
     document.getElementById('settingHeightUnit').value = userSettings.heightUnit || 'cm';
-    document.getElementById('settingHeightLabel').textContent = `Tinggi Badan (${userSettings.heightUnit})`;
+    document.getElementById('settingHeightLabel').textContent = `${currentLang === 'id' ? 'Tinggi Badan' : 'Height'} (${userSettings.heightUnit})`;
 
     let displayTargetW = userSettings.targetWeight;
     if (displayTargetW !== null && userSettings.weightUnit === 'lbs') {
@@ -278,16 +311,17 @@ function loadSettingsToForm() {
     }
     document.getElementById('settingTargetWeight').value = displayTargetW !== null ? displayTargetW : '';
     document.getElementById('settingWeightUnit').value = userSettings.weightUnit || 'kg';
-    document.getElementById('settingTargetWeightLabel').textContent = `Target Berat Badan (${userSettings.weightUnit})`;
+    document.getElementById('settingTargetWeightLabel').textContent = `${currentLang === 'id' ? 'Target Berat Badan' : 'Target Weight'} (${userSettings.weightUnit})`;
 
     document.getElementById('settingGoalType').value = userSettings.type || 'cutting';
     document.getElementById('settingTheme').value = userSettings.theme || 'dark';
 
-    // Update label form input utama
     document.getElementById('labelWeightInput').textContent = `Weight (${userSettings.weightUnit})`;
     document.getElementById('statWeightUnit').textContent = userSettings.weightUnit;
     document.getElementById('statChangeUnit').textContent = userSettings.weightUnit;
-    document.getElementById('welcomeUserSub').textContent = `Halo, ${userSettings.username}! Lacak transformasi & performa latihanmu.`;
+    document.getElementById('welcomeUserSub').textContent = currentLang === 'id' 
+        ? `Halo, ${userSettings.username}! Lacak transformasi & performa latihanmu.` 
+        : `Hello, ${userSettings.username}! Track your transformation & performance.`;
 }
 
 function applyTheme() {
@@ -322,6 +356,7 @@ function toggleLanguage() {
     if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     updateLanguageUI();
     updateAuthUI();
+    loadSettingsToForm();
     renderAll();
 }
 
@@ -341,7 +376,7 @@ function toggleGenderFields() {
     const waistLabel = document.getElementById('waistLabel');
     if (gender === 'female') {
         if (hipContainer) hipContainer.classList.remove('hidden');
-        if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Lingkar Pinggang (cm)' : 'Waist (cm)';
+        if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Lingkar Pinggang (cm)' : 'Abdomen/Waist (cm)';
     } else {
         if (hipContainer) hipContainer.classList.add('hidden');
         if (waistLabel) waistLabel.textContent = currentLang === 'id' ? 'Perut / Pinggang (cm)' : 'Abdomen/Waist (cm)';
@@ -360,7 +395,7 @@ function calculateNavyBodyFat() {
     }
 
     if (userSettings.heightUnit === 'in') {
-        height = height * 2.54; // konversi ke cm untuk rumus navy
+        height = height * 2.54;
     }
 
     let bf = 0;
@@ -435,7 +470,6 @@ function handleFormSubmit(event) {
     const bodyFat = parseFloat(document.getElementById('entryBodyFat').value) || null;
     const notes = document.getElementById('entryNotes').value;
 
-    // Simpan dalam basis kg
     if (rawWeight !== null && userSettings.weightUnit === 'lbs') {
         rawWeight = rawWeight / 2.20462;
     }
@@ -573,6 +607,7 @@ function clearAllHistory() {
 
 function renderAll() {
     renderStats();
+    renderGoalAndBadges();
     renderHistory();
     renderComparisonDropdowns();
     renderCharts();
@@ -598,7 +633,6 @@ function renderStats() {
 
         if (statWeightEl) statWeightEl.innerHTML = `${displayCurW.toFixed(2)} <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">${userSettings.weightUnit}</span>`;
 
-        // Kalkulasi BMI
         if (userSettings.height && userSettings.height > 0) {
             const heightM = userSettings.height / 100;
             const bmiValue = curW / (heightM * heightM);
@@ -657,6 +691,83 @@ function renderStats() {
         if (statBodyFatEl) statBodyFatEl.innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">%</span>`;
     } else {
         if (statBodyFatEl) statBodyFatEl.innerHTML = `-- <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">%</span>`;
+    }
+}
+
+function renderGoalAndBadges() {
+    const badgeBadgeEl = document.getElementById('goalTypeBadge');
+    const targetTextEl = document.getElementById('goalTargetText');
+    const percentageValEl = document.getElementById('goalPercentageVal');
+    const progressBarEl = document.getElementById('goalProgressBar');
+    const badgeContainerEl = document.getElementById('badgeContainer');
+
+    if (badgeBadgeEl) {
+        const typeText = userSettings.type === 'bulking' 
+            ? (currentLang === 'id' ? 'Fokus: Bulking' : 'Focus: Bulking') 
+            : (currentLang === 'id' ? 'Fokus: Cutting' : 'Focus: Cutting');
+        badgeBadgeEl.textContent = typeText;
+    }
+
+    const weighted = entries.filter(e => e.weight !== null);
+    const currentWeight = weighted.length > 0 ? weighted[weighted.length - 1].weight : null;
+
+    if (targetTextEl) {
+        if (userSettings.targetWeight !== null) {
+            let displayTargetW = userSettings.targetWeight;
+            if (userSettings.weightUnit === 'lbs') {
+                displayTargetW = displayTargetW * 2.20462;
+            }
+            targetTextEl.textContent = `Target: ${displayTargetW.toFixed(2)} ${userSettings.weightUnit}`;
+        } else {
+            targetTextEl.textContent = currentLang === 'id' ? 'Target: Belum diatur' : 'Target: Not set';
+        }
+    }
+
+    let progressPercent = 0;
+    if (currentWeight !== null && userSettings.targetWeight !== null && weighted.length > 1) {
+        const startWeight = weighted[0].weight;
+        const totalDistance = Math.abs(userSettings.targetWeight - startWeight);
+        const currentDistance = Math.abs(userSettings.targetWeight - currentWeight);
+        
+        if (totalDistance === 0) {
+            progressPercent = 100;
+        } else {
+            progressPercent = Math.max(0, Math.min(100, ((totalDistance - currentDistance) / totalDistance) * 100));
+        }
+    } else if (currentWeight !== null && userSettings.targetWeight !== null && weighted.length === 1) {
+        progressPercent = currentWeight === userSettings.targetWeight ? 100 : 0;
+    }
+
+    if (percentageValEl) percentageValEl.textContent = `${progressPercent.toFixed(0)}%`;
+    if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
+
+    if (badgeContainerEl) {
+        let badgesHtml = `
+            <div class="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-2 rounded-xl text-center">
+                <i class="fa-solid fa-trophy text-amber-400 text-sm mb-1"></i>
+                <p class="text-[10px] text-slate-500 dark:text-zinc-400 font-semibold" data-i18n="badgeStarter">Starter</p>
+            </div>
+        `;
+
+        if (entries.length >= 5) {
+            badgesHtml += `
+                <div class="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-2 rounded-xl text-center">
+                    <i class="fa-solid fa-fire text-orange-400 text-sm mb-1"></i>
+                    <p class="text-[10px] text-slate-500 dark:text-zinc-400 font-semibold" data-i18n="badgeConsistent">Konsisten</p>
+                </div>
+            `;
+        }
+
+        if (progressPercent >= 100) {
+            badgesHtml += `
+                <div class="bg-slate-50 dark:bg-zinc-900 border border-gymaccent/50 px-3 py-2 rounded-xl text-center bg-gymaccent/10">
+                    <i class="fa-solid fa-medal text-gymaccent text-sm mb-1"></i>
+                    <p class="text-[10px] text-gymaccent font-bold" data-i18n="badgePro">Transformator</p>
+                </div>
+            `;
+        }
+
+        badgeContainerEl.innerHTML = badgesHtml;
     }
 }
 
