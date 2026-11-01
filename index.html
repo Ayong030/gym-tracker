@@ -93,7 +93,7 @@
             </button>
             <button onclick="switchTab('settings')" id="tabBtn-settings" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition flex items-center space-x-2 text-gymaccent">
                 <i class="fa-solid fa-gear"></i>
-                <span>Pengaturan</span>
+                <span data-i18n="tabSettings">Pengaturan</span>
             </button>
         </div>
     </header>
@@ -110,7 +110,7 @@
                 <p id="statBodyFat" class="text-2xl font-bold mt-1 text-slate-800 dark:text-zinc-100">-- <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">%</span></p>
             </div>
             <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
-                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider">BMI Terkini</p>
+                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentBmi">BMI Terkini</p>
                 <p id="statBmi" class="text-xl font-bold mt-1 text-slate-800 dark:text-zinc-100">-- <span id="statBmiCategory" class="text-xs font-normal text-slate-500 dark:text-zinc-400"></span></p>
             </div>
             <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
@@ -120,6 +120,31 @@
             <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
                 <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider" data-i18n="statTotalEntries">Total Entries</p>
                 <p id="statEntries" class="text-2xl font-bold mt-1 text-gymaccent">0</p>
+            </div>
+        </section>
+
+        <!-- Goal & Milestone Summary Card (Dengan Progress Bar Aktif) -->
+        <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-5 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="space-y-1.5 flex-1 w-full">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-gymaccent/20 text-gymaccent px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider" id="goalTypeBadge">Fokus: --</span>
+                    <span class="text-xs text-slate-500 dark:text-zinc-400" id="goalTargetText">Target: Belum diatur</span>
+                </div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 pt-1">
+                    <span data-i18n="goalProgressLabel">Pencapaian Target</span>
+                    <span id="goalPercentageVal">0%</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-200 dark:bg-zinc-900 rounded-full h-2.5 overflow-hidden border border-slate-300 dark:border-zinc-800">
+                    <div id="goalProgressBar" class="bg-gymaccent h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <!-- Milestone Badges Container -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0" id="badgeContainer">
+                <div class="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-2 rounded-xl text-center">
+                    <i class="fa-solid fa-trophy text-amber-400 text-sm mb-1"></i>
+                    <p class="text-[10px] text-slate-500 dark:text-zinc-400 font-semibold" data-i18n="badgeStarter">Starter</p>
+                </div>
             </div>
         </section>
 
@@ -403,40 +428,36 @@
             </section>
         </div>
 
-        <!-- ================= TAB 4: SETTINGS (PENGATURAN KHUSUS) ================= -->
+        <!-- ================= TAB 4: SETTINGS ================= -->
         <div id="tabContent-settings" class="space-y-8 hidden">
             <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl max-w-2xl mx-auto space-y-6">
                 <div class="border-b border-slate-200 dark:border-zinc-800 pb-4">
                     <h2 class="text-xl font-bold flex items-center space-x-2 text-gymaccent">
                         <i class="fa-solid fa-gear"></i>
-                        <span>Pengaturan Aplikasi & Profil</span>
+                        <span data-i18n="settingsHeaderTitle">Pengaturan Aplikasi & Profil</span>
                     </h2>
-                    <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Sesuaikan profil, unit pengukuran, dan tema tampilan sesuai preferensi Anda.</p>
+                    <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1" data-i18n="settingsHeaderSub">Sesuaikan profil, unit pengukuran, dan tema tampilan sesuai preferensi Anda.</p>
                 </div>
 
                 <div class="space-y-4">
-                    <!-- Username -->
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Username / Nama Panggilan</label>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settingsUsernameLabel">Username / Nama Panggilan</label>
                         <input type="text" id="settingUsername" placeholder="Contoh: Erick" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                     </div>
 
-                    <!-- Jenis Kelamin -->
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Jenis Kelamin</label>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settingsGenderLabel">Jenis Kelamin</label>
                         <select id="settingGender" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                            <option value="male">Pria</option>
-                            <option value="female">Wanita</option>
+                            <option value="male" data-i18n="genderMale">Pria</option>
+                            <option value="female" data-i18n="genderFemale">Wanita</option>
                         </select>
                     </div>
 
-                    <!-- Tinggi Badan -->
                     <div>
                         <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" id="settingHeightLabel">Tinggi Badan (cm)</label>
                         <input type="number" step="0.1" id="settingHeight" placeholder="169" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                     </div>
 
-                    <!-- Fokus & Target -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="labelGoalType">Fokus Latihan</label>
@@ -451,17 +472,16 @@
                         </div>
                     </div>
 
-                    <!-- Unit Pengukuran (kg / lbs & cm / inci) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-zinc-800">
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Satuan Berat</label>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settingsWeightUnitLabel">Satuan Berat</label>
                             <select id="settingWeightUnit" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                                 <option value="kg">Kilogram (kg)</option>
                                 <option value="lbs">Pound (lbs)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Satuan Tinggi</label>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settingsHeightUnitLabel">Satuan Tinggi</label>
                             <select id="settingHeightUnit" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                                 <option value="cm">Centimeter (cm)</option>
                                 <option value="in">Inci (in)</option>
@@ -469,18 +489,17 @@
                         </div>
                     </div>
 
-                    <!-- Tema Tampilan -->
                     <div class="pt-2 border-t border-slate-200 dark:border-zinc-800">
-                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Tema Tampilan</label>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settingsThemeLabel">Tema Tampilan</label>
                         <select id="settingTheme" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                            <option value="dark">Dark Mode (Gelap)</option>
-                            <option value="bright">Bright Mode (Terang)</option>
+                            <option value="dark" data-i18n="themeDark">Dark Mode (Gelap)</option>
+                            <option value="bright" data-i18n="themeBright">Bright Mode (Terang)</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="pt-4">
-                    <button onclick="saveAppSettings()" class="w-full bg-gymaccent text-zinc-950 font-bold py-3 rounded-lg hover:bg-green-400 transition shadow-lg text-sm">
+                    <button onclick="saveAppSettings()" class="w-full bg-gymaccent text-zinc-950 font-bold py-3 rounded-lg hover:bg-green-400 transition shadow-lg text-sm" data-i18n="btnSaveSettings">
                         Simpan Semua Pengaturan
                     </button>
                 </div>
