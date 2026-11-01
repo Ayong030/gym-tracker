@@ -34,8 +34,6 @@ const translations = {
         statTotalEntries: "Total Entri",
         formTitle: "Catat Progres Baru",
         labelDate: "Tanggal",
-        labelWeight: "Berat Badan (kg)",
-        labelBodyFat: "% Lemak Tubuh",
         labelFrontPhoto: "Foto Depan",
         labelSidePhoto: "Foto Samping Dada",
         labelBackPhoto: "Foto Belakang",
@@ -46,10 +44,6 @@ const translations = {
         calcGender: "Jenis Kelamin",
         genderMale: "Pria",
         genderFemale: "Wanita",
-        calcHeight: "Tinggi (cm)",
-        calcNeck: "Leher (cm)",
-        calcWaist: "Perut / Pinggang (cm)",
-        calcHip: "Pinggul (cm) [Khusus Wanita]",
         calcResult: "Hasil Estimasi:",
         btnCalculate: "Hitung",
         btnApplyBF: "Gunakan ke Form",
@@ -58,7 +52,6 @@ const translations = {
         boxBefore: "BEFORE",
         boxAfter: "AFTER",
         rowDate: "DATE:",
-        rowWeight: "WEIGHT:",
         rowBodyFat: "BODY FAT:",
         compEntry1: "Entri 1 (Awal)",
         compEntry2: "Entri 2 (Terbaru)",
@@ -66,7 +59,6 @@ const translations = {
         btnCompare: "Bandingkan Foto",
         btnExportImage: "Ekspor Foto Perbandingan",
         chartTitle: "Analitik Grafik & Tren Progres",
-        chartWeightTitle: "Grafik Berat Badan (kg)",
         chartBfTitle: "Grafik Lemak Tubuh (%)",
         filterAll: "Semua",
         filterWeek: "7 Hari Terakhir",
@@ -81,18 +73,8 @@ const translations = {
         btnImport: "Impor JSON",
         btnClearHistory: "Kosongkan Riwayat",
         footerText: "Gym Progress & Body Tracker • Dibangun untuk transformasi fitness Anda",
-        btnSetGoal: "Atur Target",
-        modalGoalTitle: "Pengaturan Target & Profil",
-        labelGoalType: "Fokus Latihan",
         goalCutting: "Cutting (Turun Berat)",
         goalBulking: "Bulking (Naik Berat)",
-        labelTargetWeight: "Target Berat Badan (kg)",
-        labelTargetBF: "Target Lemak Tubuh (%) [Opsional]",
-        btnCancel: "Batal",
-        btnSaveGoal: "Simpan Target",
-        badgeStarter: "Starter",
-        badgeConsistent: "Konsisten",
-        badgePro: "Transformator"
     },
     en: {
         appTitle: "Gym Progress & Body Tracker",
@@ -106,8 +88,6 @@ const translations = {
         statTotalEntries: "Total Entries",
         formTitle: "Log New Progress",
         labelDate: "Date",
-        labelWeight: "Weight (kg)",
-        labelBodyFat: "Body Fat %",
         labelFrontPhoto: "Front Pose",
         labelSidePhoto: "Side Chest Pose",
         labelBackPhoto: "Back Pose",
@@ -118,10 +98,6 @@ const translations = {
         calcGender: "Gender",
         genderMale: "Male",
         genderFemale: "Female",
-        calcHeight: "Height (cm)",
-        calcNeck: "Neck (cm)",
-        calcWaist: "Abdomen/Waist (cm)",
-        calcHip: "Hip (cm) [Female only]",
         calcResult: "Result:",
         btnCalculate: "Calculate",
         btnApplyBF: "Use in Form",
@@ -130,7 +106,6 @@ const translations = {
         boxBefore: "BEFORE",
         boxAfter: "AFTER",
         rowDate: "DATE:",
-        rowWeight: "WEIGHT:",
         rowBodyFat: "BODY FAT:",
         compEntry1: "Entry 1 (Baseline)",
         compEntry2: "Entry 2 (Recent)",
@@ -138,7 +113,6 @@ const translations = {
         btnCompare: "Compare Photos",
         btnExportImage: "Export Comparison Image",
         chartTitle: "Progress Analytics & Trends",
-        chartWeightTitle: "Weight Chart (kg)",
         chartBfTitle: "Body Fat Chart (%)",
         filterAll: "All",
         filterWeek: "Last 7 Days",
@@ -153,30 +127,24 @@ const translations = {
         btnImport: "Import JSON",
         btnClearHistory: "Clear History",
         footerText: "Gym Progress & Built for fitness transformation",
-        btnSetGoal: "Set Goal",
-        modalGoalTitle: "Goal & Focus Settings",
-        labelGoalType: "Training Focus",
         goalCutting: "Cutting (Lose Weight)",
         goalBulking: "Bulking (Gain Weight)",
-        labelTargetWeight: "Target Weight (kg)",
-        labelTargetBF: "Target Body Fat (%) [Optional]",
-        btnCancel: "Cancel",
-        btnSaveGoal: "Save Goal",
-        badgeStarter: "Starter",
-        badgeConsistent: "Consistent",
-        badgePro: "Transformer"
     }
 };
 
 let currentLang = 'id';
 let entries = [];
-let userGoal = {
+let userSettings = {
+    username: 'Athlete',
     gender: 'male',
-    height: null,
+    height: 169, // selalu disimpan dalam cm (metric base)
+    weightUnit: 'kg', // 'kg' atau 'lbs'
+    heightUnit: 'cm', // 'cm' atau 'in'
+    theme: 'dark', // 'dark' atau 'bright'
     type: 'cutting',
-    targetWeight: null,
-    targetBF: null
+    targetWeight: null
 };
+
 let currentUser = null;
 let calculatedBFValue = null;
 let weightChartInstance = null;
@@ -253,45 +221,97 @@ function handleAuthAction() {
     }
 }
 
-function openGoalModal() {
-    document.getElementById('modalGender').value = userGoal.gender || 'male';
-    document.getElementById('modalHeight').value = userGoal.height !== null ? userGoal.height : '';
-    document.getElementById('modalGoalType').value = userGoal.type || 'cutting';
-    document.getElementById('modalTargetWeight').value = userGoal.targetWeight !== null ? userGoal.targetWeight : '';
-    document.getElementById('modalTargetBF').value = userGoal.targetBF !== null ? userGoal.targetBF : '';
-    document.getElementById('goalModal').classList.remove('hidden');
-}
+// SIMPAN PENGATURAN DARI HALAMAN SETTINGS
+function saveAppSettings() {
+    const username = document.getElementById('settingUsername').value.trim() || 'Athlete';
+    const gender = document.getElementById('settingGender').value;
+    let rawHeight = parseFloat(document.getElementById('settingHeight').value) || null;
+    const heightUnit = document.getElementById('settingHeightUnit').value;
+    const type = document.getElementById('settingGoalType').value;
+    let rawTargetW = parseFloat(document.getElementById('settingTargetWeight').value) || null;
+    const weightUnit = document.getElementById('settingWeightUnit').value;
+    const theme = document.getElementById('settingTheme').value;
 
-function closeGoalModal() {
-    document.getElementById('goalModal').classList.add('hidden');
-}
+    // Konversi ke basis metrik (cm dan kg) jika user memasukkan lbs atau inci
+    if (rawHeight !== null && heightUnit === 'in') {
+        rawHeight = rawHeight * 2.54; // inch ke cm
+    }
+    if (rawTargetW !== null && weightUnit === 'lbs') {
+        rawTargetW = rawTargetW / 2.20462; // lbs ke kg
+    }
 
-function saveGoalSettings() {
-    const gender = document.getElementById('modalGender').value;
-    const height = parseFloat(document.getElementById('modalHeight').value) || null;
-    const type = document.getElementById('modalGoalType').value;
-    const targetWeight = parseFloat(document.getElementById('modalTargetWeight').value) || null;
-    const targetBF = parseFloat(document.getElementById('modalTargetBF').value) || null;
+    userSettings = {
+        username,
+        gender,
+        height: rawHeight,
+        weightUnit,
+        heightUnit,
+        theme,
+        type,
+        targetWeight: rawTargetW
+    };
 
-    userGoal = { gender, height, type, targetWeight, targetBF };
     saveData().then(() => {
-        closeGoalModal();
-        renderGoalAndBadges();
-        renderStats();
-        alert(currentLang === 'id' ? 'Pengaturan profil & target berhasil disimpan!' : 'Goal saved successfully!');
+        applyTheme();
+        renderAll();
+        alert(currentLang === 'id' ? 'Pengaturan berhasil disimpan!' : 'Settings saved successfully!');
+        switchTab('tracker');
     });
 }
 
+function loadSettingsToForm() {
+    document.getElementById('settingUsername').value = userSettings.username || '';
+    document.getElementById('settingGender').value = userSettings.gender || 'male';
+    
+    // Tampilkan sesuai unit pilihan user
+    let displayHeight = userSettings.height;
+    if (displayHeight !== null && userSettings.heightUnit === 'in') {
+        displayHeight = (displayHeight / 2.54).toFixed(1);
+    }
+    document.getElementById('settingHeight').value = displayHeight !== null ? displayHeight : '';
+    document.getElementById('settingHeightUnit').value = userSettings.heightUnit || 'cm';
+    document.getElementById('settingHeightLabel').textContent = `Tinggi Badan (${userSettings.heightUnit})`;
+
+    let displayTargetW = userSettings.targetWeight;
+    if (displayTargetW !== null && userSettings.weightUnit === 'lbs') {
+        displayTargetW = (displayTargetW * 2.20462).toFixed(2);
+    }
+    document.getElementById('settingTargetWeight').value = displayTargetW !== null ? displayTargetW : '';
+    document.getElementById('settingWeightUnit').value = userSettings.weightUnit || 'kg';
+    document.getElementById('settingTargetWeightLabel').textContent = `Target Berat Badan (${userSettings.weightUnit})`;
+
+    document.getElementById('settingGoalType').value = userSettings.type || 'cutting';
+    document.getElementById('settingTheme').value = userSettings.theme || 'dark';
+
+    // Update label form input utama
+    document.getElementById('labelWeightInput').textContent = `Weight (${userSettings.weightUnit})`;
+    document.getElementById('statWeightUnit').textContent = userSettings.weightUnit;
+    document.getElementById('statChangeUnit').textContent = userSettings.weightUnit;
+    document.getElementById('welcomeUserSub').textContent = `Halo, ${userSettings.username}! Lacak transformasi & performa latihanmu.`;
+}
+
+function applyTheme() {
+    const htmlRoot = document.getElementById('htmlRoot');
+    if (userSettings.theme === 'bright') {
+        htmlRoot.classList.remove('dark');
+    } else {
+        htmlRoot.classList.add('dark');
+    }
+}
+
 function switchTab(tabName) {
-    ['tracker', 'comparison', 'history'].forEach(t => {
+    ['tracker', 'comparison', 'history', 'settings'].forEach(t => {
         const content = document.getElementById(`tabContent-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
         if (t === tabName) {
             content.classList.remove('hidden');
             btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-gymaccent text-zinc-950 transition flex items-center space-x-2";
+            if (t === 'settings') {
+                loadSettingsToForm();
+            }
         } else {
             content.classList.add('hidden');
-            btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2";
+            btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition flex items-center space-x-2";
         }
     });
 }
@@ -302,7 +322,7 @@ function toggleLanguage() {
     if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     updateLanguageUI();
     updateAuthUI();
-    renderGoalAndBadges();
+    renderAll();
 }
 
 function updateLanguageUI() {
@@ -330,13 +350,17 @@ function toggleGenderFields() {
 
 function calculateNavyBodyFat() {
     const gender = document.getElementById('calcGender').value;
-    const height = parseFloat(document.getElementById('calcHeightInput').value);
+    let height = parseFloat(document.getElementById('calcHeightInput').value);
     const neck = parseFloat(document.getElementById('calcNeckInput').value);
     const waist = parseFloat(document.getElementById('calcWaistInput').value);
     
     if (!height || !neck || !waist) {
         alert(currentLang === 'id' ? 'Harap isi tinggi, leher, dan lingkar perut/pinggang!' : 'Please fill height, neck, and waist!');
         return;
+    }
+
+    if (userSettings.heightUnit === 'in') {
+        height = height * 2.54; // konversi ke cm untuk rumus navy
     }
 
     let bf = 0;
@@ -407,9 +431,14 @@ function previewImage(input, previewId) {
 function handleFormSubmit(event) {
     event.preventDefault();
     const date = document.getElementById('entryDate').value;
-    const weight = parseFloat(document.getElementById('entryWeight').value) || null;
+    let rawWeight = parseFloat(document.getElementById('entryWeight').value) || null;
     const bodyFat = parseFloat(document.getElementById('entryBodyFat').value) || null;
     const notes = document.getElementById('entryNotes').value;
+
+    // Simpan dalam basis kg
+    if (rawWeight !== null && userSettings.weightUnit === 'lbs') {
+        rawWeight = rawWeight / 2.20462;
+    }
 
     const frontPhoto = document.getElementById('frontPreview')?.dataset?.base64 || null;
     const sidePhoto = document.getElementById('sidePreview')?.dataset?.base64 || null;
@@ -418,7 +447,7 @@ function handleFormSubmit(event) {
     const newEntry = {
         id: Date.now(),
         date,
-        weight,
+        weight: rawWeight,
         bodyFat,
         notes,
         frontPhoto,
@@ -457,7 +486,7 @@ function handleFormSubmit(event) {
 
 function saveData() {
     return new Promise((resolve) => {
-        const payload = { entries, userGoal };
+        const payload = { entries, userSettings };
         if (currentUser && isFirebaseInitialized) {
             db.collection("users").doc(currentUser.uid).set(payload).then(() => {
                 resolve(true);
@@ -472,9 +501,7 @@ function saveData() {
                 localStorage.setItem('gym_tracker_data', JSON.stringify(payload));
                 resolve(true);
             } catch (e) {
-                alert(currentLang === 'id' 
-                    ? 'Penyimpanan penuh! Hapus beberapa foto/entri lama atau gunakan fitur Ekspor JSON.' 
-                    : 'Storage full! Delete old photos/entries or use Export JSON.');
+                alert(currentLang === 'id' ? 'Penyimpanan penuh!' : 'Storage full!');
                 entries.pop();
                 resolve(false);
             }
@@ -488,11 +515,13 @@ function loadData() {
             if (doc.exists) {
                 const data = doc.data();
                 entries = data.entries || [];
-                userGoal = data.userGoal || { gender: 'male', height: null, type: 'cutting', targetWeight: null, targetBF: null };
+                if (data.userSettings) userSettings = data.userSettings;
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
             } else {
                 entries = [];
             }
+            applyTheme();
+            loadSettingsToForm();
             renderAll();
         }).catch(error => {
             console.error("Gagal memuat dari Firestore:", error);
@@ -508,21 +537,27 @@ function loadData() {
                     entries = parsed;
                 } else {
                     entries = parsed.entries || [];
-                    userGoal = parsed.userGoal || { gender: 'male', height: null, type: 'cutting', targetWeight: null, targetBF: null };
+                    if (parsed.userSettings) userSettings = parsed.userSettings;
+                    else if (parsed.userGoal) {
+                        userSettings.type = parsed.userGoal.type;
+                        userSettings.targetWeight = parsed.userGoal.targetWeight;
+                        userSettings.height = parsed.userGoal.height;
+                        userSettings.gender = parsed.userGoal.gender || 'male';
+                    }
                 }
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
             } else { entries = []; }
         } catch (e) {
             entries = [];
         }
+        applyTheme();
+        loadSettingsToForm();
         renderAll();
     }
 }
 
 function clearAllHistory() {
-    const msg = currentLang === 'id' 
-        ? 'Apakah Anda yakin ingin mengosongkan seluruh riwayat dan foto yang tersimpan?' 
-        : 'Are you sure you want to clear all history and saved photos?';
+    const msg = currentLang === 'id' ? 'Apakah Anda yakin ingin mengosongkan seluruh riwayat?' : 'Are you sure you want to clear all history?';
     if (confirm(msg)) {
         entries = [];
         saveData().then(() => {
@@ -531,14 +566,13 @@ function clearAllHistory() {
             if (compContainer) compContainer.classList.add('hidden');
             const exportBtn = document.getElementById('exportComparisonBtn');
             if (exportBtn) exportBtn.classList.add('hidden');
-            alert(currentLang === 'id' ? 'Riwayat berhasil dikosongkan.' : 'History cleared successfully.');
+            alert(currentLang === 'id' ? 'Riwayat dikosongkan.' : 'History cleared.');
         });
     }
 }
 
 function renderAll() {
     renderStats();
-    renderGoalAndBadges();
     renderHistory();
     renderComparisonDropdowns();
     renderCharts();
@@ -556,137 +590,73 @@ function renderStats() {
     const statBmiEl = document.getElementById('statBmi');
 
     if (weighted.length > 0) {
-        const curW = weighted[weighted.length - 1].weight;
-        if (statWeightEl) statWeightEl.innerHTML = `${curW} <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        let curW = weighted[weighted.length - 1].weight;
+        let displayCurW = curW;
+        if (userSettings.weightUnit === 'lbs') {
+            displayCurW = curW * 2.20462;
+        }
+
+        if (statWeightEl) statWeightEl.innerHTML = `${displayCurW.toFixed(2)} <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">${userSettings.weightUnit}</span>`;
 
         // Kalkulasi BMI
-        if (userGoal.height && userGoal.height > 0) {
-            const heightM = userGoal.height / 100;
+        if (userSettings.height && userSettings.height > 0) {
+            const heightM = userSettings.height / 100;
             const bmiValue = curW / (heightM * heightM);
             let catText = '';
-            let catColor = 'text-zinc-400';
+            let catColor = 'text-slate-500 dark:text-zinc-400';
 
             if (bmiValue < 18.5) {
                 catText = '(Kurus)';
-                catColor = 'text-blue-400';
+                catColor = 'text-blue-500 dark:text-blue-400';
             } else if (bmiValue >= 18.5 && bmiValue < 25) {
                 catText = '(Ideal)';
-                catColor = 'text-green-400';
+                catColor = 'text-green-500 dark:text-green-400';
             } else if (bmiValue >= 25 && bmiValue < 30) {
                 catText = '(Gemuk)';
-                catColor = 'text-amber-400';
+                catColor = 'text-amber-500 dark:text-amber-400';
             } else {
                 catText = '(Obesitas)';
-                catColor = 'text-red-400';
+                catColor = 'text-red-500 dark:text-red-400';
             }
 
             if (statBmiEl) statBmi.innerHTML = `${bmiValue.toFixed(1)} <span class="text-xs font-normal ${catColor}" id="statBmiCategory">${catText}</span>`;
         } else {
-            if (statBmiEl) statBmi.innerHTML = `-- <span class="text-xs font-normal text-zinc-400">(Atur Tinggi)</span>`;
+            if (statBmiEl) statBmi.innerHTML = `-- <span class="text-xs font-normal text-slate-500 dark:text-zinc-400">(Atur Tinggi)</span>`;
         }
 
         if (weighted.length > 1) {
             const latestWeight = weighted[weighted.length - 1].weight;
             const prevWeight = weighted[weighted.length - 2].weight;
-            const diff = (latestWeight - prevWeight).toFixed(2);
+            let diff = latestWeight - prevWeight;
+            if (userSettings.weightUnit === 'lbs') {
+                diff = diff * 2.20462;
+            }
+            const diffStr = diff.toFixed(2);
 
             if (changeEl) {
-                changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diff} <span class="text-sm font-normal text-zinc-400">kg</span>`;
-                changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-400'}`;
+                changeEl.innerHTML = `${diff > 0 ? '+' : ''}${diffStr} <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">${userSettings.weightUnit}</span>`;
+                changeEl.className = `text-2xl font-bold mt-1 ${diff < 0 ? 'text-green-500 dark:text-green-400' : diff > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-slate-500 dark:text-zinc-400'}`;
             }
         } else {
             if (changeEl) {
-                changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-zinc-400">kg</span>`;
-                changeEl.className = "text-2xl font-bold mt-1 text-zinc-400";
+                changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">${userSettings.weightUnit}</span>`;
+                changeEl.className = "text-2xl font-bold mt-1 text-slate-500 dark:text-zinc-400";
             }
         }
     } else {
-        if (statWeightEl) statWeightEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">kg</span>`;
+        if (statWeightEl) statWeightEl.innerHTML = `-- <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">${userSettings.weightUnit}</span>`;
         if (statBmiEl) statBmi.innerHTML = `--`;
         if (changeEl) {
-            changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-zinc-400">kg</span>`;
-            changeEl.className = "text-2xl font-bold mt-1 text-zinc-400";
+            changeEl.innerHTML = `0.00 <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">${userSettings.weightUnit}</span>`;
+            changeEl.className = "text-2xl font-bold mt-1 text-slate-500 dark:text-zinc-400";
         }
     }
 
     const statBodyFatEl = document.getElementById('statBodyFat');
     if (bfs.length > 0) {
-        if (statBodyFatEl) statBodyFatEl.innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-zinc-400">%</span>`;
+        if (statBodyFatEl) statBodyFatEl.innerHTML = `${bfs[bfs.length - 1].bodyFat} <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">%</span>`;
     } else {
-        if (statBodyFatEl) statBodyFatEl.innerHTML = `-- <span class="text-sm font-normal text-zinc-400">%</span>`;
-    }
-}
-
-function renderGoalAndBadges() {
-    const badgeBadgeEl = document.getElementById('goalTypeBadge');
-    const targetTextEl = document.getElementById('goalTargetText');
-    const percentageValEl = document.getElementById('goalPercentageVal');
-    const progressBarEl = document.getElementById('goalProgressBar');
-    const badgeContainerEl = document.getElementById('badgeContainer');
-
-    if (badgeBadgeEl) {
-        const typeText = userGoal.type === 'bulking' 
-            ? (currentLang === 'id' ? 'Fokus: Bulking' : 'Focus: Bulking') 
-            : (currentLang === 'id' ? 'Fokus: Cutting' : 'Focus: Cutting');
-        badgeBadgeEl.textContent = typeText;
-    }
-
-    const weighted = entries.filter(e => e.weight !== null);
-    const currentWeight = weighted.length > 0 ? weighted[weighted.length - 1].weight : null;
-
-    if (targetTextEl) {
-        if (userGoal.targetWeight !== null) {
-            targetTextEl.textContent = `Target: ${userGoal.targetWeight} kg${userGoal.targetBF !== null ? ' (' + userGoal.targetBF + '%)' : ''}`;
-        } else {
-            targetTextEl.textContent = currentLang === 'id' ? 'Target: Belum diatur' : 'Target: Not set';
-        }
-    }
-
-    let progressPercent = 0;
-    if (currentWeight !== null && userGoal.targetWeight !== null && weighted.length > 1) {
-        const startWeight = weighted[0].weight;
-        const totalDistance = Math.abs(userGoal.targetWeight - startWeight);
-        const currentDistance = Math.abs(userGoal.targetWeight - currentWeight);
-        
-        if (totalDistance === 0) {
-            progressPercent = 100;
-        } else {
-            progressPercent = Math.max(0, Math.min(100, ((totalDistance - currentDistance) / totalDistance) * 100));
-        }
-    } else if (currentWeight !== null && userGoal.targetWeight !== null && weighted.length === 1) {
-        progressPercent = currentWeight === userGoal.targetWeight ? 100 : 0;
-    }
-
-    if (percentageValEl) percentageValEl.textContent = `${progressPercent.toFixed(0)}%`;
-    if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
-
-    if (badgeContainerEl) {
-        let badgesHtml = `
-            <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
-                <i class="fa-solid fa-trophy text-amber-400 text-sm mb-1"></i>
-                <p class="text-[10px] text-zinc-400 font-semibold" data-i18n="badgeStarter">Starter</p>
-            </div>
-        `;
-
-        if (entries.length >= 5) {
-            badgesHtml += `
-                <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
-                    <i class="fa-solid fa-fire text-orange-400 text-sm mb-1"></i>
-                    <p class="text-[10px] text-zinc-400 font-semibold" data-i18n="badgeConsistent">Konsisten</p>
-                </div>
-            `;
-        }
-
-        if (progressPercent >= 100) {
-            badgesHtml += `
-                <div class="bg-zinc-900 border border-gymaccent/50 px-3 py-2 rounded-xl text-center bg-gymaccent/10">
-                    <i class="fa-solid fa-medal text-gymaccent text-sm mb-1"></i>
-                    <p class="text-[10px] text-gymaccent font-bold" data-i18n="badgePro">Transformator</p>
-                </div>
-            `;
-        }
-
-        badgeContainerEl.innerHTML = badgesHtml;
+        if (statBodyFatEl) statBodyFatEl.innerHTML = `-- <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">%</span>`;
     }
 }
 
@@ -696,18 +666,23 @@ function renderHistory() {
     container.innerHTML = '';
 
     if (entries.length === 0) {
-        container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">${currentLang === 'id' ? 'Belum ada data tercatat.' : 'No entries recorded yet.'}</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-400 dark:text-zinc-500 text-center py-4">${currentLang === 'id' ? 'Belum ada data tercatat.' : 'No entries recorded yet.'}</p>`;
         return;
     }
 
     [...entries].reverse().forEach(entry => {
         const card = document.createElement('div');
-        card.className = 'bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4';
+        card.className = 'bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4';
         
+        let displayW = entry.weight;
+        if (displayW !== null && userSettings.weightUnit === 'lbs') {
+            displayW = (displayW * 2.20462).toFixed(2);
+        }
+
         let photosHtml = '';
         ['frontPhoto', 'sidePhoto', 'backPhoto'].forEach(pType => {
             if (entry[pType]) {
-                photosHtml += `<img src="${entry[pType]}" onclick="openLightbox('${entry[pType]}')" class="h-16 w-16 object-cover rounded-lg cursor-pointer hover:opacity-85 border border-zinc-700">`;
+                photosHtml += `<img src="${entry[pType]}" onclick="openLightbox('${entry[pType]}')" class="h-16 w-16 object-cover rounded-lg cursor-pointer hover:opacity-85 border border-slate-300 dark:border-zinc-700">`;
             }
         });
 
@@ -715,10 +690,10 @@ function renderHistory() {
             <div class="space-y-1">
                 <div class="flex items-center space-x-3">
                     <span class="text-sm font-bold text-gymaccent">${entry.date}</span>
-                    <span class="text-xs text-zinc-400">Weight: <strong class="text-zinc-200">${entry.weight !== null ? entry.weight + ' kg' : 'N/A'}</strong></span>
-                    <span class="text-xs text-zinc-400">Body Fat: <strong class="text-zinc-200">${entry.bodyFat !== null ? entry.bodyFat + '%' : 'N/A'}</strong></span>
+                    <span class="text-xs text-slate-500 dark:text-zinc-400">Weight: <strong class="text-slate-800 dark:text-zinc-200">${displayW !== null ? displayW + ' ' + userSettings.weightUnit : 'N/A'}</strong></span>
+                    <span class="text-xs text-slate-500 dark:text-zinc-400">Body Fat: <strong class="text-slate-800 dark:text-zinc-200">${entry.bodyFat !== null ? entry.bodyFat + '%' : 'N/A'}</strong></span>
                 </div>
-                ${entry.notes ? `<p class="text-xs text-zinc-300 bg-zinc-950 p-2 rounded-lg mt-1">${entry.notes}</p>` : ''}
+                ${entry.notes ? `<p class="text-xs text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-950 p-2 rounded-lg mt-1 border border-slate-200 dark:border-zinc-800">${entry.notes}</p>` : ''}
             </div>
             <div class="flex items-center space-x-3">
                 <div class="flex space-x-2">${photosHtml}</div>
@@ -760,7 +735,11 @@ function renderComparisonDropdowns() {
     s1.innerHTML = ''; s2.innerHTML = '';
 
     entries.forEach(entry => {
-        const txt = `${entry.date} (${entry.weight !== null ? entry.weight + 'kg' : 'N/A'})`;
+        let displayW = entry.weight;
+        if (displayW !== null && userSettings.weightUnit === 'lbs') {
+            displayW = (displayW * 2.20462).toFixed(1);
+        }
+        const txt = `${entry.date} (${displayW !== null ? displayW + userSettings.weightUnit : 'N/A'})`;
         s1.appendChild(new Option(txt, entry.id));
         s2.appendChild(new Option(txt, entry.id));
     });
@@ -790,15 +769,22 @@ function renderComparison() {
     if (container) container.classList.remove('hidden');
     if (exportBtn) exportBtn.classList.remove('hidden');
     
+    let w1 = e1.weight;
+    let w2 = e2.weight;
+    if (userSettings.weightUnit === 'lbs') {
+        if (w1 !== null) w1 = w1 * 2.20462;
+        if (w2 !== null) w2 = w2 * 2.20462;
+    }
+
     document.getElementById('compDateDisplay1').textContent = e1.date;
-    document.getElementById('compWeight1').textContent = e1.weight !== null ? e1.weight + ' kg' : '--';
+    document.getElementById('compWeight1').textContent = w1 !== null ? w1.toFixed(2) + ' ' + userSettings.weightUnit : '--';
     document.getElementById('compBF1').textContent = e1.bodyFat !== null ? e1.bodyFat + '%' : '--';
     document.getElementById('compImageContainer1').innerHTML = e1[poseType] 
         ? `<img src="${e1[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e1[poseType]}')">`
         : `<span class="text-xs text-zinc-500">No photo</span>`;
 
     document.getElementById('compDateDisplay2').textContent = e2.date;
-    document.getElementById('compWeight2').textContent = e2.weight !== null ? e2.weight + ' kg' : '--';
+    document.getElementById('compWeight2').textContent = w2 !== null ? w2.toFixed(2) + ' ' + userSettings.weightUnit : '--';
     document.getElementById('compBF2').textContent = e2.bodyFat !== null ? e2.bodyFat + '%' : '--';
     document.getElementById('compImageContainer2').innerHTML = e2[poseType] 
         ? `<img src="${e2[poseType]}" class="h-full w-full object-cover rounded-lg cursor-pointer" onclick="openLightbox('${e2[poseType]}')">`
@@ -806,9 +792,11 @@ function renderComparison() {
 
     const summaryEl = document.getElementById('comparisonDiffSummary');
     if (e1.weight !== null && e2.weight !== null) {
-        const diffW = (e2.weight - e1.weight).toFixed(2);
+        let diffW = e2.weight - e1.weight;
+        if (userSettings.weightUnit === 'lbs') diffW = diffW * 2.20462;
+        const diffStr = diffW.toFixed(2);
         if (summaryEl) {
-            summaryEl.innerHTML = `Net Weight Difference: <strong class="${diffW <= 0 ? 'text-green-400' : 'text-amber-400'}">${diffW > 0 ? '+' : ''}${diffW} kg</strong>`;
+            summaryEl.innerHTML = `Net Weight Difference: <strong class="${diffW <= 0 ? 'text-green-500 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'}">${diffW > 0 ? '+' : ''}${diffStr} ${userSettings.weightUnit}</strong>`;
         }
     } else {
         if (summaryEl) summaryEl.innerHTML = '';
@@ -852,7 +840,7 @@ function setChartFilter(filter) {
             if (f === filter) {
                 btn.className = "px-3 py-1.5 rounded-lg bg-gymaccent text-zinc-950 transition";
             } else {
-                btn.className = "px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition";
+                btn.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition";
             }
         }
     });
@@ -911,8 +899,16 @@ function getFilteredEntries() {
 function renderCharts() {
     const filteredEntries = getFilteredEntries();
     const labels = filteredEntries.map(e => e.date);
-    const weights = filteredEntries.map(e => e.weight);
+    
+    const weights = filteredEntries.map(e => {
+        if (e.weight === null) return null;
+        if (userSettings.weightUnit === 'lbs') return parseFloat((e.weight * 2.20462).toFixed(2));
+        return e.weight;
+    });
+
     const bodyFats = filteredEntries.map(e => e.bodyFat);
+
+    document.getElementById('chartWeightTitleLabel').textContent = `Grafik Berat Badan (${userSettings.weightUnit})`;
 
     const weightCanvas = document.getElementById('weightChart');
     if (weightCanvas) {
@@ -922,7 +918,7 @@ function renderCharts() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Weight (kg)',
+                    label: `Weight (${userSettings.weightUnit})`,
                     data: weights,
                     borderColor: '#22c55e',
                     backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -935,8 +931,8 @@ function renderCharts() {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } },
-                    y: { grid: { color: '#27272a' }, ticks: { color: '#22c55e' } }
+                    x: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } },
+                    y: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: '#22c55e' } }
                 }
             }
         });
@@ -963,8 +959,8 @@ function renderCharts() {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } },
-                    y: { grid: { color: '#27272a' }, ticks: { color: '#3b82f6' } }
+                    x: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } },
+                    y: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: '#3b82f6' } }
                 }
             }
         });
@@ -972,7 +968,7 @@ function renderCharts() {
 }
 
 function exportData() {
-    const payload = { entries, userGoal };
+    const payload = { entries, userSettings };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
     const anchor = document.createElement('a');
     anchor.href = dataStr;
@@ -992,13 +988,15 @@ function importData(event) {
                     entries = imported;
                 } else if (imported.entries) {
                     entries = imported.entries;
-                    if (imported.userGoal) userGoal = imported.userGoal;
+                    if (imported.userSettings) userSettings = imported.userSettings;
                 } else {
                     alert('Format JSON tidak valid.');
                     return;
                 }
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
                 saveData().then(() => {
+                    applyTheme();
+                    loadSettingsToForm();
                     renderAll();
                     alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
                 });
