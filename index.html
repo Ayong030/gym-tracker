@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id" class="dark" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,106 +48,78 @@
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
-<body class="bg-gymdark text-zinc-100 min-h-screen font-sans antialiased pb-16">
+<body class="bg-slate-100 dark:bg-gymdark text-slate-800 dark:text-zinc-100 min-h-screen font-sans antialiased pb-16 transition-colors duration-300">
     <!-- Header / Navbar -->
-    <header class="border-b border-gymborder bg-gymcard/85 backdrop-blur sticky top-0 z-50">
+    <header class="border-b border-slate-200 dark:border-gymborder bg-white/85 dark:bg-gymcard/85 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
-                <!-- Logo Kustom Anda -->
-                <div class="h-10 w-10 rounded-xl overflow-hidden border border-gymborder flex items-center justify-center bg-zinc-900 shadow-md">
+                <div class="h-10 w-10 rounded-xl overflow-hidden border border-slate-200 dark:border-gymborder flex items-center justify-center bg-slate-200 dark:bg-zinc-900 shadow-md">
                     <img src="GymTracker.jpg" alt="Logo" class="h-full w-full object-cover">
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight" data-i18n="appTitle">Gym Progress & Body Tracker</h1>
-                    <p class="text-xs text-zinc-400" data-i18n="appSubtitle">Track your transformation & performance</p>
+                    <p class="text-xs text-slate-500 dark:text-zinc-400" id="welcomeUserSub">Track your transformation & performance</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-3 flex-wrap gap-2">
-                <!-- Tombol Buka Pengaturan Target -->
-                <button onclick="openGoalModal()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5 text-gymaccent">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <span data-i18n="btnSetGoal">Atur Target</span>
-                </button>
-
                 <!-- Status & Tombol Auth Opsional -->
-                <div id="authContainer" class="flex items-center space-x-2 bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-lg text-xs">
-                    <span id="authStatusText" class="text-zinc-400">Mode Lokal (Tamu)</span>
+                <div id="authContainer" class="flex items-center space-x-2 bg-slate-100 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs">
+                    <span id="authStatusText" class="text-slate-600 dark:text-zinc-400">Mode Lokal (Tamu)</span>
                     <button id="authActionButton" onclick="handleAuthAction()" class="bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition">
                         <i class="fa-brands fa-google mr-1"></i> Login Google
                     </button>
                 </div>
 
-                <button id="langToggleBtn" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold transition">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold transition">
                     🌐 <span id="currentLangLabel">ID</span>
                 </button>
             </div>
         </div>
         
         <!-- Navigation Tabs -->
-        <div class="max-w-7xl mx-auto px-4 flex space-x-2 border-t border-gymborder overflow-x-auto py-2">
+        <div class="max-w-7xl mx-auto px-4 flex space-x-2 border-t border-slate-200 dark:border-gymborder overflow-x-auto py-2">
             <button onclick="switchTab('tracker')" id="tabBtn-tracker" class="px-4 py-2 text-xs font-bold rounded-lg bg-gymaccent text-zinc-950 transition flex items-center space-x-2">
                 <i class="fa-solid fa-plus-circle"></i>
                 <span data-i18n="tabTracker">Input & Grafik</span>
             </button>
-            <button onclick="switchTab('comparison')" id="tabBtn-comparison" class="px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2">
+            <button onclick="switchTab('comparison')" id="tabBtn-comparison" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition flex items-center space-x-2">
                 <i class="fa-solid fa-columns"></i>
                 <span data-i18n="tabComparison">Before & After</span>
             </button>
-            <button onclick="switchTab('history')" id="tabBtn-history" class="px-4 py-2 text-xs font-bold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition flex items-center space-x-2">
+            <button onclick="switchTab('history')" id="tabBtn-history" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition flex items-center space-x-2">
                 <i class="fa-solid fa-history"></i>
                 <span data-i18n="tabHistory">Riwayat Entri</span>
+            </button>
+            <button onclick="switchTab('settings')" id="tabBtn-settings" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition flex items-center space-x-2 text-gymaccent">
+                <i class="fa-solid fa-gear"></i>
+                <span>Pengaturan</span>
             </button>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <!-- Stats Summary (Ditambah Kotak BMI) -->
+        <!-- Stats Summary -->
         <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentWeight">Current Weight</p>
-                <p id="statWeight" class="text-2xl font-bold mt-1 text-zinc-100">-- <span class="text-sm font-normal text-zinc-400">kg</span></p>
+            <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
+                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentWeight">Current Weight</p>
+                <p id="statWeight" class="text-2xl font-bold mt-1 text-slate-800 dark:text-zinc-100">-- <span id="statWeightUnit" class="text-sm font-normal text-slate-500 dark:text-zinc-400">kg</span></p>
             </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentBodyFat">Current Body Fat</p>
-                <p id="statBodyFat" class="text-2xl font-bold mt-1 text-zinc-100">-- <span class="text-sm font-normal text-zinc-400">%</span></p>
+            <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
+                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider" data-i18n="statCurrentBodyFat">Current Body Fat</p>
+                <p id="statBodyFat" class="text-2xl font-bold mt-1 text-slate-800 dark:text-zinc-100">-- <span class="text-sm font-normal text-slate-500 dark:text-zinc-400">%</span></p>
             </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider">BMI Terkini</p>
-                <p id="statBmi" class="text-xl font-bold mt-1 text-zinc-100">-- <span id="statBmiCategory" class="text-xs font-normal text-zinc-400"></span></p>
+            <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
+                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider">BMI Terkini</p>
+                <p id="statBmi" class="text-xl font-bold mt-1 text-slate-800 dark:text-zinc-100">-- <span id="statBmiCategory" class="text-xs font-normal text-slate-500 dark:text-zinc-400"></span></p>
             </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalChange">Total Change</p>
-                <p id="statChange" class="text-2xl font-bold mt-1 text-zinc-400">0.00 <span class="text-sm font-normal text-zinc-400">kg</span></p>
+            <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
+                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider" data-i18n="statTotalChange">Total Change</p>
+                <p id="statChange" class="text-2xl font-bold mt-1 text-slate-500 dark:text-zinc-400">0.00 <span id="statChangeUnit" class="text-sm font-normal text-slate-500 dark:text-zinc-400">kg</span></p>
             </div>
-            <div class="bg-gymcard border border-gymborder p-4 rounded-xl">
-                <p class="text-xs text-zinc-400 uppercase tracking-wider" data-i18n="statTotalEntries">Total Entries</p>
+            <div class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder p-4 rounded-xl shadow-sm">
+                <p class="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider" data-i18n="statTotalEntries">Total Entries</p>
                 <p id="statEntries" class="text-2xl font-bold mt-1 text-gymaccent">0</p>
-            </div>
-        </section>
-
-        <!-- Goal & Milestone Summary Card -->
-        <section class="bg-gymcard border border-gymborder p-5 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div class="space-y-1.5 flex-1">
-                <div class="flex items-center space-x-2">
-                    <span class="bg-gymaccent/20 text-gymaccent px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider" id="goalTypeBadge">Fokus: --</span>
-                    <span class="text-xs text-zinc-400" id="goalTargetText">Target: Belum diatur</span>
-                </div>
-                <div class="flex justify-between text-xs font-semibold text-zinc-300 pt-1">
-                    <span id="goalProgressLabel">Pencapaian Target</span>
-                    <span id="goalPercentageVal">0%</span>
-                </div>
-                <!-- Progress Bar -->
-                <div class="w-full bg-zinc-900 rounded-full h-2.5 overflow-hidden border border-zinc-800">
-                    <div id="goalProgressBar" class="bg-gymaccent h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-            <!-- Milestone Badges Container -->
-            <div class="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0" id="badgeContainer">
-                <div class="bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-xl text-center">
-                    <i class="fa-solid fa-trophy text-amber-400 text-sm mb-1"></i>
-                    <p class="text-[10px] text-zinc-400 font-semibold" data-i18n="badgeStarter">Starter</p>
-                </div>
             </div>
         </section>
 
@@ -155,7 +127,7 @@
         <div id="tabContent-tracker" class="space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Form Section -->
-                <section class="lg:col-span-2 bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+                <section class="lg:col-span-2 bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl">
                     <h2 class="text-lg font-semibold mb-4 flex items-center space-x-2">
                         <i class="fa-solid fa-plus-circle text-gymaccent"></i>
                         <span data-i18n="formTitle">Log New Progress</span>
@@ -163,46 +135,46 @@
                     <form id="progressForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1">
                                     <span data-i18n="labelDate">Date</span> <span class="text-red-500">*</span>
                                 </label>
-                                <input type="date" id="entryDate" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <input type="date" id="entryDate" required class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelWeight">Weight (kg)</label>
-                                <input type="number" step="0.01" id="entryWeight" placeholder="e.g., 67.65" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" id="labelWeightInput">Weight (kg)</label>
+                                <input type="number" step="0.01" id="entryWeight" placeholder="e.g., 67.65" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelBodyFat">Body Fat %</label>
-                                <input type="number" step="0.01" id="entryBodyFat" placeholder="e.g., 15.55" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" data-i18n="labelBodyFat">Body Fat %</label>
+                                <input type="number" step="0.01" id="entryBodyFat" placeholder="e.g., 15.55" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                             </div>
                         </div>
 
                         <!-- Photo Uploads -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelFrontPhoto">Front Pose</label>
+                            <div class="border border-dashed border-slate-300 dark:border-zinc-700 rounded-xl p-4 text-center bg-slate-50 dark:bg-zinc-900/50 hover:border-gymaccent transition">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-2" data-i18n="labelFrontPhoto">Front Pose</label>
                                 <input type="file" id="frontPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'frontPreview')">
                                 <label for="frontPhotoInput" class="cursor-pointer block">
-                                    <div id="frontPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                    <div id="frontPreview" class="h-32 bg-slate-200 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
                                 </label>
                             </div>
-                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelSidePhoto">Side Chest Pose</label>
+                            <div class="border border-dashed border-slate-300 dark:border-zinc-700 rounded-xl p-4 text-center bg-slate-50 dark:bg-zinc-900/50 hover:border-gymaccent transition">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-2" data-i18n="labelSidePhoto">Side Chest Pose</label>
                                 <input type="file" id="sidePhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'sidePreview')">
                                 <label for="sidePhotoInput" class="cursor-pointer block">
-                                    <div id="sidePreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                    <div id="sidePreview" class="h-32 bg-slate-200 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
                                 </label>
                             </div>
-                            <div class="border border-dashed border-zinc-700 rounded-xl p-4 text-center bg-zinc-900/50 hover:border-gymaccent transition">
-                                <label class="block text-xs font-medium text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
+                            <div class="border border-dashed border-slate-300 dark:border-zinc-700 rounded-xl p-4 text-center bg-slate-50 dark:bg-zinc-900/50 hover:border-gymaccent transition">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
                                 <input type="file" id="backPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
                                 <label for="backPhotoInput" class="cursor-pointer block">
-                                    <div id="backPreview" class="h-32 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 overflow-hidden">
+                                    <div id="backPreview" class="h-32 bg-slate-200 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
                                 </label>
@@ -210,8 +182,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelNotes">Notes (Optional)</label>
-                            <textarea id="entryNotes" rows="2" placeholder="Workout notes, diet, PRs..." class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></textarea>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" data-i18n="labelNotes">Notes (Optional)</label>
+                            <textarea id="entryNotes" rows="2" placeholder="Workout notes, diet, PRs..." class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></textarea>
                         </div>
 
                         <button type="submit" class="w-full bg-gymaccent text-zinc-950 font-bold py-2.5 rounded-lg hover:bg-green-400 transition flex items-center justify-center space-x-2">
@@ -222,50 +194,50 @@
                 </section>
 
                 <!-- Navy Body Fat Calculator -->
-                <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl flex flex-col justify-between">
                     <div>
                         <h2 class="text-lg font-semibold mb-2 flex items-center space-x-2">
                             <i class="fa-solid fa-calculator text-gymaccent"></i>
                             <span data-i18n="calcTitle">Navy Body Fat Calculator</span>
                         </h2>
-                        <p class="text-xs text-zinc-400 mb-4" data-i18n="calcDesc">Estimate body fat % based on U.S. Navy formula.</p>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400 mb-4" data-i18n="calcDesc">Estimate body fat % based on U.S. Navy formula.</p>
                         
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcGender">Gender</label>
-                                <select id="calcGender" onchange="toggleGenderFields()" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" data-i18n="calcGender">Gender</label>
+                                <select id="calcGender" onchange="toggleGenderFields()" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                                     <option value="male" data-i18n="genderMale">Male</option>
                                     <option value="female" data-i18n="genderFemale">Female</option>
                                 </select>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHeight">Height (cm)</label>
-                                    <input type="number" step="0.1" id="calcHeightInput" placeholder="169" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                                    <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" id="calcHeightLabel">Height (cm)</label>
+                                    <input type="number" step="0.1" id="calcHeightInput" placeholder="169" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcNeck">Neck (cm)</label>
-                                    <input type="number" step="0.1" id="calcNeckInput" placeholder="38" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                                    <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" id="calcNeckLabel">Neck (cm)</label>
+                                    <input type="number" step="0.1" id="calcNeckInput" placeholder="38" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" id="waistLabel" data-i18n="calcWaist">Abdomen/Waist (cm)</label>
-                                <input type="number" step="0.1" id="calcWaistInput" placeholder="80" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" id="waistLabel" data-i18n="calcWaist">Abdomen/Waist (cm)</label>
+                                <input type="number" step="0.1" id="calcWaistInput" placeholder="80" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm">
                             </div>
                             <div id="hipFieldContainer" class="hidden">
-                                <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="calcHip">Hip (cm)</label>
-                                <input type="number" step="0.1" id="calcHipInput" placeholder="95" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" id="calcHipLabel">Hip (cm)</label>
+                                <input type="number" step="0.1" id="calcHipInput" placeholder="95" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm">
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-4 border-t border-zinc-800">
+                    <div class="mt-6 pt-4 border-t border-slate-200 dark:border-zinc-800">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs text-zinc-400" data-i18n="calcResult">Result:</span>
+                            <span class="text-xs text-slate-500 dark:text-zinc-400" data-i18n="calcResult">Result:</span>
                             <span id="calcResultDisplay" class="text-xl font-bold text-gymaccent">-- %</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button type="button" onclick="calculateNavyBodyFat()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnCalculate">Calculate</button>
+                            <button type="button" onclick="calculateNavyBodyFat()" class="bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnCalculate">Calculate</button>
                             <button type="button" onclick="applyCalculatedBF()" class="bg-gymaccent/20 text-gymaccent hover:bg-gymaccent/30 border border-gymaccent/50 text-xs font-semibold py-2 rounded-lg transition" data-i18n="btnApplyBF">Use in Form</button>
                         </div>
                     </div>
@@ -273,45 +245,45 @@
             </div>
 
             <!-- Progress Analytics Charts -->
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl space-y-6">
+            <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h2 class="text-lg font-semibold flex items-center space-x-2">
                         <i class="fa-solid fa-chart-line text-gymaccent"></i>
                         <span data-i18n="chartTitle">Progress Analytics & Trends</span>
                     </h2>
-                    <div class="flex bg-zinc-900 p-1 rounded-xl border border-zinc-700 text-xs font-semibold flex-wrap gap-1">
+                    <div class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300 dark:border-zinc-700 text-xs font-semibold flex-wrap gap-1">
                         <button onclick="setChartFilter('all')" id="filterBtn-all" class="px-3 py-1.5 rounded-lg bg-gymaccent text-zinc-950 transition" data-i18n="filterAll">Semua</button>
-                        <button onclick="setChartFilter('week')" id="filterBtn-week" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition" data-i18n="filterWeek">7 Hari Terakhir</button>
-                        <button onclick="setChartFilter('month')" id="filterBtn-month" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition" data-i18n="filterMonth">30 Hari Terakhir</button>
-                        <button onclick="setChartFilter('year')" id="filterBtn-year" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition" data-i18n="filterYear">Tahun Ini</button>
-                        <button onclick="setChartFilter('custom')" id="filterBtn-custom" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition" data-i18n="filterCustom">Kustom</button>
+                        <button onclick="setChartFilter('week')" id="filterBtn-week" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterWeek">7 Hari Terakhir</button>
+                        <button onclick="setChartFilter('month')" id="filterBtn-month" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterMonth">30 Hari Terakhir</button>
+                        <button onclick="setChartFilter('year')" id="filterBtn-year" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterYear">Tahun Ini</button>
+                        <button onclick="setChartFilter('custom')" id="filterBtn-custom" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterCustom">Kustom</button>
                     </div>
                 </div>
 
-                <div id="customDateRangeContainer" class="hidden bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl flex flex-col md:flex-row items-end gap-4">
+                <div id="customDateRangeContainer" class="hidden bg-slate-100 dark:bg-zinc-900/80 border border-slate-300 dark:border-zinc-800 p-4 rounded-xl flex flex-col md:flex-row items-end gap-4">
                     <div class="w-full md:w-auto flex-1">
-                        <label class="block text-xs font-medium text-zinc-400 mb-1" data-i18n="startDateLabel">Mulai Tanggal</label>
-                        <input type="date" id="chartStartDate" onchange="applyCustomDateRange()" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-gymaccent">
+                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-400 mb-1" data-i18n="startDateLabel">Mulai Tanggal</label>
+                        <input type="date" id="chartStartDate" onchange="applyCustomDateRange()" class="w-full bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-gymaccent">
                     </div>
                     <div class="w-full md:w-auto flex-1">
-                        <label class="block text-xs font-medium text-zinc-400 mb-1" data-i18n="endDateLabel">Sampai Tanggal</label>
-                        <input type="date" id="chartEndDate" onchange="applyCustomDateRange()" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-gymaccent">
+                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-400 mb-1" data-i18n="endDateLabel">Sampai Tanggal</label>
+                        <input type="date" id="chartEndDate" onchange="applyCustomDateRange()" class="w-full bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-gymaccent">
                     </div>
-                    <button onclick="resetDateRange()" class="w-full md:w-auto px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnResetRange">Reset</button>
+                    <button onclick="resetDateRange()" class="w-full md:w-auto px-4 py-1.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnResetRange">Reset</button>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-zinc-900/60 border border-zinc-800 p-4 rounded-xl">
-                        <h3 class="text-sm font-semibold mb-3 text-green-400 flex items-center space-x-2">
+                    <div class="bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl">
+                        <h3 class="text-sm font-semibold mb-3 text-green-500 dark:text-green-400 flex items-center space-x-2">
                             <i class="fa-solid fa-weight-scale"></i>
-                            <span data-i18n="chartWeightTitle">Grafik Berat Badan (kg)</span>
+                            <span id="chartWeightTitleLabel">Grafik Berat Badan (kg)</span>
                         </h3>
                         <div class="h-64 w-full">
                             <canvas id="weightChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-zinc-900/60 border border-zinc-800 p-4 rounded-xl">
-                        <h3 class="text-sm font-semibold mb-3 text-blue-400 flex items-center space-x-2">
+                    <div class="bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl">
+                        <h3 class="text-sm font-semibold mb-3 text-blue-500 dark:text-blue-400 flex items-center space-x-2">
                             <i class="fa-solid fa-percent"></i>
                             <span data-i18n="chartBfTitle">Grafik Lemak Tubuh (%)</span>
                         </h3>
@@ -325,24 +297,24 @@
 
         <!-- ================= TAB 2: BEFORE & AFTER COMPARISON ================= -->
         <div id="tabContent-comparison" class="space-y-8 hidden">
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+            <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl">
                 <div class="text-center mb-6">
-                    <h2 class="text-2xl font-black tracking-wider uppercase text-zinc-100" data-i18n="transJourneyTitle">Transformation Journey</h2>
-                    <p class="text-xs text-zinc-400 tracking-widest uppercase mt-1" data-i18n="transJourneySub">Before & After</p>
+                    <h2 class="text-2xl font-black tracking-wider uppercase text-slate-800 dark:text-zinc-100" data-i18n="transJourneyTitle">Transformation Journey</h2>
+                    <p class="text-xs text-slate-500 dark:text-zinc-400 tracking-widest uppercase mt-1" data-i18n="transJourneySub">Before & After</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry1">Entry 1 (Baseline)</label>
-                        <select id="compDate1" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" data-i18n="compEntry1">Entry 1 (Baseline)</label>
+                        <select id="compDate1" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compEntry2">Entry 2 (Recent)</label>
-                        <select id="compDate2" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" data-i18n="compEntry2">Entry 2 (Recent)</label>
+                        <select id="compDate2" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent"></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="compPose">Pose</label>
-                        <select id="compPoseType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-1" data-i18n="compPose">Pose</label>
+                        <select id="compPoseType" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
                             <option value="front" data-i18n="labelFrontPhoto">Front Pose</option>
                             <option value="side" data-i18n="labelSidePhoto">Side Chest Pose</option>
                             <option value="back" data-i18n="labelBackPhoto">Back Pose</option>
@@ -351,7 +323,7 @@
                 </div>
                 <div class="flex flex-wrap justify-center gap-3 mb-8">
                     <button type="button" onclick="renderComparison()" class="px-6 py-2.5 bg-gymaccent text-zinc-950 font-bold text-sm rounded-lg hover:bg-green-400 transition shadow-lg" data-i18n="btnCompare">Compare Photos</button>
-                    <button type="button" id="exportComparisonBtn" onclick="exportComparisonImage()" class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 font-bold text-sm rounded-lg transition shadow-lg hidden flex items-center space-x-2">
+                    <button type="button" id="exportComparisonBtn" onclick="exportComparisonImage()" class="px-6 py-2.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-100 font-bold text-sm rounded-lg transition shadow-lg hidden flex items-center space-x-2">
                         <i class="fa-solid fa-download"></i>
                         <span data-i18n="btnExportImage">Ekspor Foto Perbandingan</span>
                     </button>
@@ -375,7 +347,7 @@
                                     <span id="compDateDisplay1" class="font-medium">--</span>
                                 </div>
                                 <div class="flex justify-between items-center py-1.5 px-3 bg-slate-100 border-b border-slate-200">
-                                    <span class="font-extrabold text-xs tracking-wider" data-i18n="rowWeight">WEIGHT:</span>
+                                    <span class="font-extrabold text-xs tracking-wider">WEIGHT:</span>
                                     <span id="compWeight1" class="font-bold">--</span>
                                 </div>
                                 <div class="flex justify-between items-center py-1.5 px-3 bg-slate-50">
@@ -395,7 +367,7 @@
                                     <span id="compDateDisplay2" class="font-medium">--</span>
                                 </div>
                                 <div class="flex justify-between items-center py-1.5 px-3 bg-slate-100 border-b border-slate-200">
-                                    <span class="font-extrabold text-xs tracking-wider" data-i18n="rowWeight">WEIGHT:</span>
+                                    <span class="font-extrabold text-xs tracking-wider">WEIGHT:</span>
                                     <span id="compWeight2" class="font-bold">--</span>
                                 </div>
                                 <div class="flex justify-between items-center py-1.5 px-3 bg-slate-50">
@@ -406,21 +378,21 @@
                         </div>
                     </div>
                 </div>
-                <div id="comparisonDiffSummary" class="text-center mt-6 text-sm font-medium text-zinc-300"></div>
+                <div id="comparisonDiffSummary" class="text-center mt-6 text-sm font-medium text-slate-700 dark:text-zinc-300"></div>
             </section>
         </div>
 
         <!-- ================= TAB 3: HISTORY ================= -->
         <div id="tabContent-history" class="space-y-8 hidden">
-            <section class="bg-gymcard border border-gymborder rounded-2xl p-6 shadow-xl">
+            <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h2 class="text-lg font-semibold flex items-center space-x-2">
                         <i class="fa-solid fa-history text-gymaccent"></i>
                         <span data-i18n="historyTitle">Entry History</span>
                     </h2>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="exportData()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnExport">Export JSON</button>
-                        <label class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
+                        <button onclick="exportData()" class="px-3 py-1.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnExport">Export JSON</button>
+                        <label class="px-3 py-1.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
                             <span data-i18n="btnImport">Import JSON</span>
                             <input type="file" accept=".json" onchange="importData(event)" class="hidden">
                         </label>
@@ -430,52 +402,91 @@
                 <div id="historyList" class="space-y-4"></div>
             </section>
         </div>
-    </main>
 
-    <!-- Modal Pengaturan Target & Profil -->
-    <div id="goalModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-gymcard border border-gymborder max-w-md w-full p-6 rounded-2xl shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-                <h3 class="text-base font-bold flex items-center space-x-2 text-gymaccent">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <span data-i18n="modalGoalTitle">Pengaturan Target & Profil</span>
-                </h3>
-                <button onclick="closeGoalModal()" class="text-zinc-400 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1">Jenis Kelamin</label>
-                    <select id="modalGender" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                        <option value="male">Pria</option>
-                        <option value="female">Wanita</option>
-                    </select>
+        <!-- ================= TAB 4: SETTINGS (PENGATURAN KHUSUS) ================= -->
+        <div id="tabContent-settings" class="space-y-8 hidden">
+            <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl max-w-2xl mx-auto space-y-6">
+                <div class="border-b border-slate-200 dark:border-zinc-800 pb-4">
+                    <h2 class="text-xl font-bold flex items-center space-x-2 text-gymaccent">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Pengaturan Aplikasi & Profil</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Sesuaikan profil, unit pengukuran, dan tema tampilan sesuai preferensi Anda.</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1">Tinggi Badan (cm)</label>
-                    <input type="number" step="0.1" id="modalHeight" placeholder="e.g., 169" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+
+                <div class="space-y-4">
+                    <!-- Username -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Username / Nama Panggilan</label>
+                        <input type="text" id="settingUsername" placeholder="Contoh: Erick" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                    </div>
+
+                    <!-- Jenis Kelamin -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Jenis Kelamin</label>
+                        <select id="settingGender" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                            <option value="male">Pria</option>
+                            <option value="female">Wanita</option>
+                        </select>
+                    </div>
+
+                    <!-- Tinggi Badan -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" id="settingHeightLabel">Tinggi Badan (cm)</label>
+                        <input type="number" step="0.1" id="settingHeight" placeholder="169" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                    </div>
+
+                    <!-- Fokus & Target -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" data-i18n="labelGoalType">Fokus Latihan</label>
+                            <select id="settingGoalType" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <option value="cutting" data-i18n="goalCutting">Cutting (Turun Berat)</option>
+                                <option value="bulking" data-i18n="goalBulking">Bulking (Naik Berat)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1" id="settingTargetWeightLabel">Target Berat Badan (kg)</label>
+                            <input type="number" step="0.01" id="settingTargetWeight" placeholder="65.00" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                        </div>
+                    </div>
+
+                    <!-- Unit Pengukuran (kg / lbs & cm / inci) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Satuan Berat</label>
+                            <select id="settingWeightUnit" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <option value="kg">Kilogram (kg)</option>
+                                <option value="lbs">Pound (lbs)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Satuan Tinggi</label>
+                            <select id="settingHeightUnit" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                                <option value="cm">Centimeter (cm)</option>
+                                <option value="in">Inci (in)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tema Tampilan -->
+                    <div class="pt-2 border-t border-slate-200 dark:border-zinc-800">
+                        <label class="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">Tema Tampilan</label>
+                        <select id="settingTheme" class="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
+                            <option value="dark">Dark Mode (Gelap)</option>
+                            <option value="bright">Bright Mode (Terang)</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelGoalType">Fokus Latihan</label>
-                    <select id="modalGoalType" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                        <option value="cutting" data-i18n="goalCutting">Cutting (Turun Berat)</option>
-                        <option value="bulking" data-i18n="goalBulking">Bulking (Naik Berat)</option>
-                    </select>
+
+                <div class="pt-4">
+                    <button onclick="saveAppSettings()" class="w-full bg-gymaccent text-zinc-950 font-bold py-3 rounded-lg hover:bg-green-400 transition shadow-lg text-sm">
+                        Simpan Semua Pengaturan
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelTargetWeight">Target Berat Badan (kg)</label>
-                    <input type="number" step="0.01" id="modalTargetWeight" placeholder="e.g., 65.00" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1" data-i18n="labelTargetBF">Target Lemak Tubuh (%) [Opsional]</label>
-                    <input type="number" step="0.01" id="modalTargetBF" placeholder="e.g., 14.00" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gymaccent">
-                </div>
-            </div>
-            <div class="flex space-x-3 pt-2">
-                <button onclick="closeGoalModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold py-2.5 rounded-lg transition" data-i18n="btnCancel">Batal</button>
-                <button onclick="saveGoalSettings()" class="flex-1 bg-gymaccent text-zinc-950 font-bold text-xs py-2.5 rounded-lg hover:bg-green-400 transition" data-i18n="btnSaveGoal">Simpan Target</button>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <!-- Lightbox Modal -->
     <div id="lightboxModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
@@ -486,7 +497,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-gymborder bg-gymcard py-6 text-center text-xs text-zinc-500 mt-12">
+    <footer class="border-t border-slate-200 dark:border-gymborder bg-white dark:bg-gymcard py-6 text-center text-xs text-slate-500 dark:text-zinc-500 mt-12">
         <p data-i18n="footerText">Gym Progress & Body Tracker • Built for fitness transformation</p>
     </footer>
 
