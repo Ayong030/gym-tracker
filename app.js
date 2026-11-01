@@ -173,10 +173,10 @@ let entries = [];
 let userSettings = {
     username: 'Athlete',
     gender: 'male',
-    height: 169, // disimpan dalam basis cm
-    weightUnit: 'kg', // 'kg' atau 'lbs'
-    heightUnit: 'cm', // 'cm' atau 'in'
-    theme: 'dark', // 'dark' atau 'bright'
+    height: 169,
+    weightUnit: 'kg',
+    heightUnit: 'cm',
+    theme: 'dark',
     type: 'cutting',
     targetWeight: null
 };
@@ -214,20 +214,25 @@ function updateAuthUI() {
     const statusText = document.getElementById('authStatusText');
     const actionBtn = document.getElementById('authActionButton');
     
+    if (statusText) {
+        statusText.textContent = userSettings.username || 'Athlete';
+    }
+
     if (!isFirebaseInitialized) {
-        statusText.textContent = "Mode Lokal (Offline)";
-        actionBtn.style.display = "none";
+        if (actionBtn) actionBtn.style.display = "none";
         return;
     }
 
     if (currentUser) {
-        statusText.textContent = currentUser.displayName || currentUser.email;
-        actionBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket mr-1"></i> Logout`;
-        actionBtn.className = "bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded hover:bg-red-500/30 transition";
+        if (actionBtn) {
+            actionBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket mr-1"></i> Logout`;
+            actionBtn.className = "bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded hover:bg-red-500/30 transition";
+        }
     } else {
-        statusText.textContent = currentLang === 'id' ? "Mode Tamu (Lokal)" : "Guest Mode (Local)";
-        actionBtn.innerHTML = `<i class="fa-brands fa-google mr-1"></i> Login Google`;
-        actionBtn.className = "bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition";
+        if (actionBtn) {
+            actionBtn.innerHTML = `<i class="fa-brands fa-google mr-1"></i> Login Google`;
+            actionBtn.className = "bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition";
+        }
     }
 }
 
@@ -240,8 +245,8 @@ function handleAuthAction() {
     if (currentUser) {
         auth.signOut().then(() => {
             currentUser = null;
-            loadData();
             updateAuthUI();
+            loadData();
             alert(currentLang === 'id' ? 'Berhasil keluar. Kembali ke mode lokal.' : 'Logged out successfully.');
         });
     } else {
@@ -287,6 +292,7 @@ function saveAppSettings() {
 
     saveData().then(() => {
         applyTheme();
+        updateAuthUI();
         renderAll();
         alert(currentLang === 'id' ? 'Pengaturan berhasil disimpan!' : 'Settings saved successfully!');
         switchTab('tracker');
@@ -555,6 +561,7 @@ function loadData() {
                 entries = [];
             }
             applyTheme();
+            updateAuthUI();
             loadSettingsToForm();
             renderAll();
         }).catch(error => {
@@ -585,6 +592,7 @@ function loadData() {
             entries = [];
         }
         applyTheme();
+        updateAuthUI();
         loadSettingsToForm();
         renderAll();
     }
@@ -1107,6 +1115,7 @@ function importData(event) {
                 entries.sort((a, b) => new Date(a.date) - new Date(b.date));
                 saveData().then(() => {
                     applyTheme();
+                    updateAuthUI();
                     loadSettingsToForm();
                     renderAll();
                     alert(currentLang === 'id' ? 'Data berhasil diimpor!' : 'Data imported successfully!');
