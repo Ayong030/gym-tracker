@@ -63,7 +63,7 @@
             </div>
             
             <div class="flex items-center space-x-3 flex-wrap gap-2">
-                <!-- Status & Tombol Auth (Tombol di kiri, Username di kanan) -->
+                <!-- Status & Tombol Auth (Tombol Logout di kiri, Username di kanan) -->
                 <div id="authContainer" class="flex items-center space-x-2 bg-slate-100 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs">
                     <button id="authActionButton" onclick="handleAuthAction()" class="bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition">
                         <i class="fa-brands fa-google mr-1"></i> Login Google
@@ -199,6 +199,7 @@
                                 <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
                                 <input type="file" id="backPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
                                 <label for="backPhotoInput" class="cursor-pointer block">
+                                    <div id="backPhotoInput" class="cursor-pointer block">
                                     <div id="backPreview" class="h-32 bg-slate-200 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
@@ -269,51 +270,54 @@
                 </section>
             </div>
 
-            <!-- Progress Analytics Charts -->
+            <!-- Progress Analytics Charts (Dengan Navigasi Tombol Panah & Tab Week/Month/Year/Custom) -->
             <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl space-y-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <h2 class="text-lg font-semibold flex items-center space-x-2">
-                        <i class="fa-solid fa-chart-line text-gymaccent"></i>
-                        <span data-i18n="chartTitle">Progress Analytics & Trends</span>
-                    </h2>
-                    <div class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300 dark:border-zinc-700 text-xs font-semibold flex-wrap gap-1">
-                        <button onclick="setChartFilter('all')" id="filterBtn-all" class="px-3 py-1.5 rounded-lg bg-gymaccent text-zinc-950 transition" data-i18n="filterAll">Semua</button>
-                        <button onclick="setChartFilter('week')" id="filterBtn-week" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterWeek">7 Hari Terakhir</button>
-                        <button onclick="setChartFilter('month')" id="filterBtn-month" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterMonth">30 Hari Terakhir</button>
-                        <button onclick="setChartFilter('year')" id="filterBtn-year" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterYear">Tahun Ini</button>
-                        <button onclick="setChartFilter('custom')" id="filterBtn-custom" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition" data-i18n="filterCustom">Kustom</button>
+                <div class="flex flex-col space-y-4">
+                    <!-- Tab Filter: Week, Month, Year, Custom -->
+                    <div class="flex justify-center bg-slate-100 dark:bg-zinc-900 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 max-w-md mx-auto w-full text-xs font-semibold">
+                        <button onclick="setChartFilter('week')" id="filterBtn-week" class="flex-1 py-2 rounded-xl bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm transition">Week</button>
+                        <button onclick="setChartFilter('month')" id="filterBtn-month" class="flex-1 py-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-slate-900 transition">Month</button>
+                        <button onclick="setChartFilter('year')" id="filterBtn-year" class="flex-1 py-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-slate-900 transition">Year</button>
+                        <button onclick="setChartFilter('custom')" id="filterBtn-custom" class="flex-1 py-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-slate-900 transition">Custom</button>
+                    </div>
+
+                    <!-- Bar Navigasi Tanggal dengan Tombol Panah (⬅️ ➡️) -->
+                    <div id="dateNavigationContainer" class="flex justify-between items-center bg-slate-100/80 dark:bg-zinc-900/80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 max-w-md mx-auto w-full">
+                        <button onclick="shiftChartRange(-1)" class="p-2 text-slate-600 dark:text-zinc-300 hover:text-blue-500 transition font-bold">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span id="chartRangeLabel" class="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-wider">01/11 - 07/11</span>
+                        <button onclick="shiftChartRange(1)" class="p-2 text-slate-600 dark:text-zinc-300 hover:text-blue-500 transition font-bold">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex justify-between items-center px-2 pt-2">
+                        <h2 class="text-sm font-bold flex items-center space-x-2 text-slate-700 dark:text-zinc-300">
+                            <i class="fa-solid fa-chart-line text-blue-500"></i>
+                            <span id="chartWeightTitleLabel">Grafik Berat Badan (kg)</span>
+                        </h2>
                     </div>
                 </div>
 
-                <div id="customDateRangeContainer" class="hidden bg-slate-100 dark:bg-zinc-900/80 border border-slate-300 dark:border-zinc-800 p-4 rounded-xl flex flex-col md:flex-row items-end gap-4">
+                <!-- Container Kustom Tanggal (Muncul Jika Pilih Tab Custom) -->
+                <div id="customDateRangeContainer" class="hidden bg-slate-50 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl flex flex-col md:flex-row items-end gap-4">
                     <div class="w-full md:w-auto flex-1">
-                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-400 mb-1" data-i18n="startDateLabel">Mulai Tanggal</label>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1" data-i18n="startDateLabel">Mulai Tanggal</label>
                         <input type="date" id="chartStartDate" onchange="applyCustomDateRange()" class="w-full bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-gymaccent">
                     </div>
                     <div class="w-full md:w-auto flex-1">
-                        <label class="block text-xs font-medium text-slate-600 dark:text-zinc-400 mb-1" data-i18n="endDateLabel">Sampai Tanggal</label>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1" data-i18n="endDateLabel">Sampai Tanggal</label>
                         <input type="date" id="chartEndDate" onchange="applyCustomDateRange()" class="w-full bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-gymaccent">
                     </div>
                     <button onclick="resetDateRange()" class="w-full md:w-auto px-4 py-1.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnResetRange">Reset</button>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl">
-                        <h3 class="text-sm font-semibold mb-3 text-green-500 dark:text-green-400 flex items-center space-x-2">
-                            <i class="fa-solid fa-weight-scale"></i>
-                            <span id="chartWeightTitleLabel">Grafik Berat Badan (kg)</span>
-                        </h3>
-                        <div class="h-64 w-full">
+                <!-- Kotak Grafik Kurva Biru Lembut -->
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-slate-50/50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 p-5 rounded-2xl">
+                        <div class="h-72 w-full">
                             <canvas id="weightChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl">
-                        <h3 class="text-sm font-semibold mb-3 text-blue-500 dark:text-blue-400 flex items-center space-x-2">
-                            <i class="fa-solid fa-percent"></i>
-                            <span data-i18n="chartBfTitle">Grafik Lemak Tubuh (%)</span>
-                        </h3>
-                        <div class="h-64 w-full">
-                            <canvas id="bodyFatChart"></canvas>
                         </div>
                     </div>
                 </div>
