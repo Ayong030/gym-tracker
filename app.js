@@ -1070,6 +1070,7 @@ function renderCharts() {
 
     document.getElementById('chartWeightTitleLabel').textContent = `Grafik Berat Badan (${userSettings.weightUnit})`;
 
+    // Grafik Berat Badan
     const weightCanvas = document.getElementById('weightChart');
     if (weightCanvas) {
         if (weightChartInstance) weightChartInstance.destroy();
@@ -1115,6 +1116,7 @@ function renderCharts() {
         });
     }
 
+    // Grafik Lemak Tubuh (%)
     const bfCanvas = document.getElementById('bodyFatChart');
     if (bfCanvas) {
         if (bodyFatChartInstance) bodyFatChartInstance.destroy();
@@ -1126,20 +1128,35 @@ function renderCharts() {
                     label: 'Body Fat (%)',
                     data: bodyFats,
                     borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
+                    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                    borderWidth: 2.5,
+                    tension: 0.35,
                     fill: true,
-                    pointRadius: 4
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false } 
+                },
                 scales: {
-                    x: { grid: { display: false }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } },
-                    y: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a', borderDash: [4, 4] }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } }
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa', font: { size: 11 } } 
+                    },
+                    y: { 
+                        grid: { 
+                            color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a', 
+                            borderDash: [4, 4] 
+                        }, 
+                        ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa', font: { size: 11 } } 
+                    }
                 }
             }
         });

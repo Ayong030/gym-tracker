@@ -63,7 +63,7 @@
             </div>
             
             <div class="flex items-center space-x-3 flex-wrap gap-2">
-                <!-- Status & Tombol Auth (Tombol Logout di kiri, Username di kanan) -->
+                <!-- Status & Tombol Auth (Tombol di kiri, Username di kanan) -->
                 <div id="authContainer" class="flex items-center space-x-2 bg-slate-100 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs">
                     <button id="authActionButton" onclick="handleAuthAction()" class="bg-gymaccent text-zinc-950 font-bold px-2.5 py-1 rounded hover:bg-green-400 transition">
                         <i class="fa-brands fa-google mr-1"></i> Login Google
@@ -199,7 +199,6 @@
                                 <label class="block text-xs font-medium text-slate-600 dark:text-zinc-300 mb-2" data-i18n="labelBackPhoto">Back Pose</label>
                                 <input type="file" id="backPhotoInput" accept="image/*" class="hidden" onchange="previewImage(this, 'backPreview')">
                                 <label for="backPhotoInput" class="cursor-pointer block">
-                                    <div id="backPhotoInput" class="cursor-pointer block">
                                     <div id="backPreview" class="h-32 bg-slate-200 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 overflow-hidden">
                                         <i class="fa-solid fa-camera text-xl"></i>
                                     </div>
@@ -270,7 +269,7 @@
                 </section>
             </div>
 
-            <!-- Progress Analytics Charts (Dengan Navigasi Tombol Panah & Tab Week/Month/Year/Custom) -->
+            <!-- Progress Analytics Charts -->
             <section class="bg-white dark:bg-gymcard border border-slate-200 dark:border-gymborder rounded-2xl p-6 shadow-xl space-y-6">
                 <div class="flex flex-col space-y-4">
                     <!-- Tab Filter: Week, Month, Year, Custom -->
@@ -291,13 +290,6 @@
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
                     </div>
-
-                    <div class="flex justify-between items-center px-2 pt-2">
-                        <h2 class="text-sm font-bold flex items-center space-x-2 text-slate-700 dark:text-zinc-300">
-                            <i class="fa-solid fa-chart-line text-blue-500"></i>
-                            <span id="chartWeightTitleLabel">Grafik Berat Badan (kg)</span>
-                        </h2>
-                    </div>
                 </div>
 
                 <!-- Container Kustom Tanggal (Muncul Jika Pilih Tab Custom) -->
@@ -313,11 +305,24 @@
                     <button onclick="resetDateRange()" class="w-full md:w-auto px-4 py-1.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border border-slate-300 dark:border-zinc-700 text-xs font-semibold rounded-lg transition" data-i18n="btnResetRange">Reset</button>
                 </div>
 
-                <!-- Kotak Grafik Kurva Biru Lembut -->
-                <div class="grid grid-cols-1 gap-6">
-                    <div class="bg-slate-50/50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 p-5 rounded-2xl">
-                        <div class="h-72 w-full">
+                <!-- Kotak Grafik (Berat Badan & Lemak Tubuh) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-50/50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 p-4 rounded-2xl">
+                        <h3 class="text-sm font-semibold mb-3 text-blue-500 dark:text-blue-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-weight-scale"></i>
+                            <span id="chartWeightTitleLabel">Grafik Berat Badan (kg)</span>
+                        </h3>
+                        <div class="h-64 w-full">
                             <canvas id="weightChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50/50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 p-4 rounded-2xl">
+                        <h3 class="text-sm font-semibold mb-3 text-blue-500 dark:text-blue-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-percent"></i>
+                            <span data-i18n="chartBfTitle">Grafik Lemak Tubuh (%)</span>
+                        </h3>
+                        <div class="h-64 w-full">
+                            <canvas id="bodyFatChart"></canvas>
                         </div>
                     </div>
                 </div>
