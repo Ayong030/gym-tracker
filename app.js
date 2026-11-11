@@ -64,11 +64,6 @@ const translations = {
         btnExportImage: "Ekspor Foto Perbandingan",
         chartTitle: "Analitik Grafik & Tren Progres",
         chartBfTitle: "Grafik Lemak Tubuh (%)",
-        filterAll: "Semua",
-        filterWeek: "7 Hari Terakhir",
-        filterMonth: "30 Hari Terakhir",
-        filterYear: "Tahun Ini",
-        filterCustom: "Kustom",
         startDateLabel: "Mulai Tanggal",
         endDateLabel: "Sampai Tanggal",
         btnResetRange: "Reset",
@@ -136,11 +131,6 @@ const translations = {
         btnExportImage: "Export Comparison Image",
         chartTitle: "Progress Analytics & Trends",
         chartBfTitle: "Body Fat Chart (%)",
-        filterAll: "All",
-        filterWeek: "Last 7 Days",
-        filterMonth: "Last 30 Days",
-        filterYear: "This Year",
-        filterCustom: "Custom",
         startDateLabel: "Start Date",
         endDateLabel: "End Date",
         btnResetRange: "Reset",
@@ -185,7 +175,8 @@ let currentUser = null;
 let calculatedBFValue = null;
 let weightChartInstance = null;
 let bodyFatChartInstance = null;
-let currentChartFilter = 'all';
+let currentChartFilter = 'week';
+let chartOffset = 0; // 0 = periode saat ini, -1 = periode lalu, 1 = periode depan
 
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('entryDate');
@@ -945,24 +936,33 @@ function exportComparisonImage() {
 
 function setChartFilter(filter) {
     currentChartFilter = filter;
+    chartOffset = 0; // Reset offset saat ganti tab
     const customContainer = document.getElementById('customDateRangeContainer');
+    const dateNavContainer = document.getElementById('dateNavigationContainer');
     
     if (filter === 'custom') {
         if (customContainer) customContainer.classList.remove('hidden');
+        if (dateNavContainer) dateNavContainer.classList.add('hidden');
     } else {
         if (customContainer) customContainer.classList.add('hidden');
+        if (dateNavContainer) dateNavContainer.classList.remove('hidden');
     }
 
-    ['all', 'week', 'month', 'year', 'custom'].forEach(f => {
+    ['week', 'month', 'year', 'custom'].forEach(f => {
         const btn = document.getElementById(`filterBtn-${f}`);
         if (btn) {
             if (f === filter) {
-                btn.className = "px-3 py-1.5 rounded-lg bg-gymaccent text-zinc-950 transition";
+                btn.className = "flex-1 py-2 rounded-xl bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm transition";
             } else {
-                btn.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition";
+                btn.className = "flex-1 py-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-slate-900 transition";
             }
         }
     });
+    renderCharts();
+}
+
+function shiftChartRange(direction) {
+    chartOffset += direction;
     renderCharts();
 }
 
@@ -982,37 +982,78 @@ function getFilteredEntries() {
     if (entries.length === 0) return entries;
     const now = new Date();
 
-    if (currentChartFilter === 'all') {
-        return entries;
-    } else if (currentChartFilter === 'week') {
-        const cutoff = new Date();
-        cutoff.setDate(now.getDate() - 7);
-        return entries.filter(e => new Date(e.date) >= cutoff);
-    } else if (currentChartFilter === 'month') {
-        const cutoff = new Date();
-        cutoff.setDate(now.getDate() - 30);
-        return entries.filter(e => new Date(e.date) >= cutoff);
-    } else if (currentChartFilter === 'year') {
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        return entries.filter(e => new Date(e.date) >= startOfYear);
-    } else if (currentChartFilter === 'custom') {
+    if (currentChartFilter === 'week') {
+        const dayOfWeek = now.getDay() || 7;
+        let weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - dayOfWeek + 1 + (chartOffset * 7));
+        weekStart.setHours(0, 0, 0, 0);
+
+        let weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        updateRangeLabel(weekStart, weekEnd, 'week');
+        return entries.filter(e => {
+            const d = new Date(e.date);
+            return d >= weekStart && d <= weekEnd;
+        });
+    } 
+    else if (currentChartFilter === 'month') {
+        let targetMonth = new Date(now.getFullYear(), now.getMonth() + chartOffset, 1);
+        let startMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
+        let endMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        updateRangeLabel(startMonth, endMonth, 'month');
+        return entries.filter(e => {
+            const d = new Date(e.date);
+            return d >= startMonth && d <= endMonth;
+        });
+    }
+    else if (currentChartFilter === 'year') {
+        let targetYear = now.getFullYear() + chartOffset;
+        let startYear = new Date(targetYear, 0, 1);
+        let endYear = new Date(targetYear, 11, 31, 23, 59, 59, 999);
+
+        updateRangeLabel(startYear, endYear, 'year');
+        return entries.filter(e => {
+            const d = new Date(e.date);
+            return d >= startYear && d <= endYear;
+        });
+    }
+    else if (currentChartFilter === 'custom') {
         const startDateVal = document.getElementById('chartStartDate')?.value;
         const endDateVal = document.getElementById('chartEndDate')?.value;
 
         return entries.filter(e => {
             const entryDate = new Date(e.date);
             let valid = true;
-            if (startDateVal) {
-                valid = valid && (entryDate >= new Date(startDateVal));
-            }
-            if (endDateVal) {
-                valid = valid && (entryDate <= new Date(endDateVal));
-            }
+            if (startDateVal) valid = valid && (entryDate >= new Date(startDateVal));
+            if (endDateVal) valid = valid && (entryDate <= new Date(endDateVal));
             return valid;
         });
     }
 
     return entries;
+}
+
+function updateRangeLabel(start, end, type) {
+    const labelEl = document.getElementById('chartRangeLabel');
+    if (!labelEl) return;
+
+    const formatDate = (d) => {
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}`;
+    };
+
+    if (type === 'month') {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        labelEl.textContent = `${months[start.getMonth()]} ${start.getFullYear()}`;
+    } else if (type === 'year') {
+        labelEl.textContent = `Tahun ${start.getFullYear()}`;
+    } else {
+        labelEl.textContent = `${formatDate(start)} - ${formatDate(end)}`;
+    }
 }
 
 function renderCharts() {
@@ -1039,19 +1080,36 @@ function renderCharts() {
                 datasets: [{
                     label: `Weight (${userSettings.weightUnit})`,
                     data: weights,
-                    borderColor: '#22c55e',
-                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                    borderWidth: 2.5,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
                 scales: {
-                    x: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } },
-                    y: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: '#22c55e' } }
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa', font: { size: 11 } } 
+                    },
+                    y: { 
+                        grid: { 
+                            color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a',
+                            borderDash: [4, 4]
+                        }, 
+                        ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa', font: { size: 11 } } 
+                    }
                 }
             }
         });
@@ -1071,15 +1129,17 @@ function renderCharts() {
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     borderWidth: 2,
                     tension: 0.3,
-                    fill: true
+                    fill: true,
+                    pointRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } },
-                    y: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a' }, ticks: { color: '#3b82f6' } }
+                    x: { grid: { display: false }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } },
+                    y: { grid: { color: userSettings.theme === 'bright' ? '#e2e8f0' : '#27272a', borderDash: [4, 4] }, ticks: { color: userSettings.theme === 'bright' ? '#64748b' : '#a1a1aa' } }
                 }
             }
         });
